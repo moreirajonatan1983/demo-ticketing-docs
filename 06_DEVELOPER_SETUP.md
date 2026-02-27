@@ -66,3 +66,15 @@ Para la capa de autenticación:
 Dado que **Amazon Cognito** no cuenta con una imagen de Docker ("Local") 100% oficial ni fidedigna de AWS probada para Pooles de Usuarios, el equipo adoptará alguna de estas dos posturas documentadas en el equipo de DevOps:
 - A) Usar cuentas efímeras gratuitas **Dev IAM Profiles** en `demo-ticketing-auth` para que el Localhost autentique contra un Cognito en la Nube real durante las pruebas (Recomendado, dada su capa gratuita).
 - B) Ocultar Cognito localmente detrás de un **Wrapper / Mock JWT** autogenerado en RSA256 dentro de la Arquitectura Hexagonal de los test unitarios.
+
+---
+
+## 5. Scripts de Orquestación Local (All-in-One)
+
+Para facilitar la vida del desarrollador y no tener que levantar múltiples terminales para el Backend y el Web Frontend simultáneamente, el repositorio base incluye utilitarios de automatización.
+
+Deberás utilizar los scripts ubicados en el directorio `demo-ticketing-backend/scripts/` para levantar armónicamente todo el proyecto (API + SPA React):
+
+- `./scripts/start_all.sh`: Compila SAM, levanta el API Gateway local, y lanza el servidor de desarrollo de `demo-ticketing-web` (Vite) en background o multiplexado, atando los logs a una sola pantalla.
+- `./scripts/stop_all.sh`: Mata los procesos huérfanos de SAM local, contenedores Docker efímeros de DynamoDB y frena el servidor Vite de React de forma limpia.
+- `./scripts/restart_all.sh`: Fuerza una recompilación dura (hard-refresh) de los binarios Lambda y reinicia todo el stack frontal.
