@@ -16,6 +16,11 @@ Se trata de una plataforma orientada a la venta masiva de entradas para eventos 
 
 ## 2. Componentes de la Arquitectura
 
+### 2.0 Topología de Cuentas (AWS Organizations)
+Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la gestión centralizada de facturación (consolidada bajo el **Free Tier**), la infraestructura se despliega bajo una organización Multi-Account regida por el servicio **AWS Organizations**.
+*   **CollieTech Management (`658947469588`)**: Cuenta administrativa de gobernanza. Se utiliza exclusivamente para orquestar la creación del resto de sub-cuentas y administrar Service Control Policies (SCPs). No aloja cargas de trabajo.
+*   **demo-ticketing-auth**: Cuenta esclava dedicada de forma aislada a los recursos de identidad (Cognito, IAM Roles).
+*   **demo-ticketing-core**: Cuenta dedicada a alojar el núcleo de la aplicación, bases de datos DynamoDB, el Bus de Eventos y el poder de cómputo Serverless.
 ### 2.1 Front-End / Consolas
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
 
