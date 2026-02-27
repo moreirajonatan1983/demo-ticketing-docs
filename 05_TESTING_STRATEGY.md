@@ -32,3 +32,10 @@ El requisito más crítico de cualquier sistema "Ticketera" es sobrevivir a inst
   2.  **Límite Concurrencia de Lambda (Throttling)**: Aserción verificando que el API Gateway responde `429 Too Many Requests` u encola (SQS) la peticion amablemente, enviando a usuarios una sala de espera si se toca la cuota, sin saturar la DB y caerse el sistema entero (`500 Internal Server Error`).
   3.  **Circuit Breaker (Pasarela Simulada)**: Someter el servidor mock de pagos a cargas letales. Visualizar si nuestro Circuit Breaker efectivamente se abre y aborta transacciones en la red antes de ahogar los workers.
 - **Monitoreo Local/Gratuito**: Minikube (para trabajadores) validando su AutoScaling con KEDA contra cuellos de botella en la cola, mientras Lambdas arrojan trazas locales a AWS SAM para revisión de latencias medias.
+
+## 4. Auditoría de Seguridad y Pentesting (SecOps)
+Dada la criticidad de un negocio que tracciona operaciones de tarjetas de crédito y retiene información PII (Nombres, DNI, Emails de asistentes), la plataforma exige la implementación formal de prácticas de *Security Operations*:
+
+- **Análisis de Vulnerabilidades (SAST/DAST)**: Ejecución automatizada de herramientas como `SonarQube` u `OWASP ZAP` dentro del Pipeline CI/CD. Estas herramientas bloquean los PRs si detectan vulnerabilidades OWASP Top 10 (Ej: SQL/NoSQL Injections o dependencias corruptas en el package.json/go.mod).
+- **Auditoría de Dependencias (SCA)**: Chequeos constantes y automatizados usando herramientas como `Snyk` o `Dependabot` embebidos en el control de versiones de Github para monitorear agujeros 0-Day.
+- **Pentesting Activo**: Una vez desplegado el código en Staging, se emula un ataque "*Black-Box*" (Caja Negra) y ataques de "*Fuzzing*" y "*Rate-Limiting Explotation*" contra las URLs del API Gateway de `demo-ticketing-backend` para asegurar la estrictez funcional del componente `AWS WAF` y validar que Cognito (`demo-ticketing-auth`) no filtre JWTs alterados.

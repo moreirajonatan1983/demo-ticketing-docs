@@ -64,5 +64,5 @@ El proceso pesado (e.g. compilar mil PDFs de entradas tras un Sold-Out) no corre
 
 Para la capa de autenticación: 
 Dado que **Amazon Cognito** no cuenta con una imagen de Docker ("Local") 100% oficial ni fidedigna de AWS probada para Pooles de Usuarios, el equipo adoptará alguna de estas dos posturas documentadas en el equipo de DevOps:
-- A) Usar cuentas efímeras gratuitas **Dev IAM Profiles** en `demo-ticketing-auth-backend` para que el Localhost autentique contra un Cognito en la Nube real durante las pruebas (Recomendado, dada su capa gratuita).
+- A) Usar cuentas efímeras gratuitas **Dev IAM Profiles** en `demo-ticketing-auth` para que el Localhost autentique contra un Cognito en la Nube real durante las pruebas (Recomendado, dada su capa gratuita).
 - B) Ocultar Cognito localmente detrás de un **Wrapper / Mock JWT** autogenerado en RSA256 dentro de la Arquitectura Hexagonal de los test unitarios.
