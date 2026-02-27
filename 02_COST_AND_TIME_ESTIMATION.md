@@ -11,18 +11,18 @@ Al estructurarse sobre un modelo predominantemente **Serverless**, los costos ba
 
 A efectos de esta estimación base, se calcula un volumen de impacto moderado-alto: **100,000 Transacciones de compras mensuales**, logueos diarios y catálogos vistos.
 
-| Servicio AWS | Tipo de Funcionalidad | Uso Estimado | Costo Estimado (Free Tier/On-Demand) |
-| :--- | :--- | :--- | :--- |
-| **Amazon Cognito** | Identity & Access (Auth) | 50,000 MAUs (Usuarios Activos Mensuales) | **$0.00** (Free Tier cubre hasta 50k MAUs) |
-| **Amazon API Gateway** | Puerta de entrada (REST API) | 1,000,000 Requests/mes | **$0.00** (Free Tier: 1 Millón / mes) |
-| **AWS Lambda** | Cómputo C/Q y Procesamiento | 3,000,000 Invocaciones (200ms avg, 512mb RAM) | **$0.00** (Free Tier: 1 Millón inv. + 400.000 GB-segundos) |
-| **AWS Step Functions** | Orquestación Saga | 100,000 Ejecuciones / 400.000 Transiciones | **$0.00** (Free Tier: 4,000 transiciones libres. Resto: ~$0.01) |
-| **Amazon DynamoDB** | Base de Datos (On-Demand) | 2,000,000 Writes / 5,000,000 Reads | **$0.00 - ~$1.50** (Free Tier: 25GB libres. Consumo WCU/RCU es ínfimo) |
-| **Amazon EventBridge** | Bus de Eventos (Pub/Sub) | 200,000 Eventos / mes | **$0.00** (Free Tier: Infinito para fuentes AWS. $1 por millon custom) |
-| **Amazon SQS / SNS** | Filas y Notificaciones | 300,000 Operaciones / mes | **$0.00** (Free Tier: 1 Millón / mes) |
-| **AWS WAF** | Web Application Firewall | 1 WebACL + 3 Reglas Básico | **~$8.00** (Sin capa gratuita. Costo de regla estático) |
-| **Worker (Kubernetes)** | Generación Batch de Reportes | Procesado localmente (Minikube Station) o AWS Fargate bajo demanda ocasional. | **$0.00** (Al procesarse en estación local del dev no incurre en costos EKS). |
-| **AWS X-Ray / CloudWatch** | Trazabilidad y Métricas | Retención de 30 días, 1 Dashboard | **$0.00** (Free tier cubre 100,000 trazas recopiladas) |
+| Servicio AWS | Tipo de Funcionalidad | Uso Estimado | Costo Prod (Aprox) | Cubierto por Free Tier? | Detalles |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Amazon Cognito** | Identity & Access | 50,000 MAUs | **$0.00** | ✅ SÍ | Free Tier cubre hasta 50k MAUs perpetuos |
+| **Amazon API Gateway** | REST API | 1,000,000 Requests/mes | **$0.00** | ✅ SÍ (Temporario) | Free Tier: 1 Millón / mes (Solo primeros 12 meses) |
+| **AWS Lambda** | Cómputo (Node/Go) | 3,000,000 Invocaciones | **$0.00** | ✅ SÍ | Free Tier: 1 Millón inv. perpetuas. |
+| **AWS Step Functions** | Orquestación Saga | 100,000 Ejecuciones | **~$0.05** | ⚠️ PARCIAL | Free Tier: solo 4,000 transiciones libres. |
+| **Amazon DynamoDB** | Base de Datos | 2,000,000 Writes/reads | **$0.00** | ✅ SÍ | Free Tier: 25GB y 2.5 millones lectura/mes perpetuo |
+| **Amazon EventBridge** | Bus de Eventos | 200,000 Eventos | **$0.00** | ✅ SÍ | Free Tier: Infinito para fuentes AWS. |
+| **Amazon SQS / SNS** | Filas / Notificaciones| 300,000 Operaciones | **$0.00** | ✅ SÍ | Free Tier: 1 Millón peticiones/mes perpetuo |
+| **AWS WAF** | Web Firewall | 1 WebACL + 3 Reglas | **~$12.00** | ❌ NO | Sin capa gratuita. Costo estático mandatorio. |
+| **Worker (Kubernetes)** | Reportes en Java 21 | Instancias t3.medium | **$0.00** (Local) | ✅ SÍ (Vía Minikube) | EKS real o Fargate costaría ~$70-$100/mes |
+| **AWS X-Ray/CloudWatch**| Métricas/Trazas | 1 Custom Dashboard | **$0.00** | ✅ SÍ | Free tier cubre 100,000 trazas recopiladas |
 
 **Total TCO (Total Cost of Ownership) Estimado Mensual: ~$9.50 USD**
 *(Impulsado enteramente por el costo base obligatorio del WAF que no posee capa gratuita. Todo el núcleo crudo de procesamiento se mantiene gratuito en estos volúmenes).*
