@@ -1,7 +1,6 @@
 # Ticketera Cloud (Demo Project Docs)
 
 > **Proyecto Práctico de Arquitectura y Desarrollo Nube**
-> **Postulante/Autor:** Jonatan Moreira
 
 ## 1. Visión del Proyecto
 **Ticketera Cloud** resuelve el clásico problema de sistemas de venta masiva de entradas concurrentes (Flash Crowds / Sold-outs en segundos).
