@@ -16,4 +16,8 @@ Se aplican explícitamente conceptos de observabilidad (métricas y alarmas en C
 - **`demo-ticketing-core`**: Núcleo de la plataforma (Catálogo de eventos, Inventario, Flujo de Pago - SAGA -, Workers en K8s para envíos de Emails/Reportes y Bus de Eventos).
 
 ## 3. Arquitectura y Tecnologías
-Para navegar los patrones y arquitectura de este proyecto, referirse al documento [**Arquitectura Core**](./ARCHITECTURE.md).
+Para navegar los patrones y arquitectura de este proyecto, referirse al documento [**Arquitectura Core / Diagramas Visuales**](./ARCHITECTURE.md).
+
+## 4. Gestión del Proyecto, Finanzas y Metodología
+- [**Análisis de Costos (AWS Free Tier) y Cronograma Semanal (Estimación)**](./COST_AND_TIME_ESTIMATION.md)
+- [**Metodología de Planificación (Enfoque Ágil y Teardown)**](./PLANNING_METHODOLOGY.md)
