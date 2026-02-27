@@ -7,7 +7,9 @@ Al estructurarse sobre un modelo predominantemente **Serverless**, los costos ba
 
 ## 1. Análisis y Estimación de Costos Mensuales AWS (Producción Simulada)
 
-A efectos de esta estimación, se calcula un volumen de impacto base moderado-alto: **100,000 Transacciones de compras mensuales**, logueos diarios y catálogos vistos.
+*Nota importante (Lifecycle FinOps)*: Si bien vamos a desarrollar el MVP teniendo meticulosamente en cuenta el plan "Free Tier" (Capa Gratuita), **igualmente se ha agregado el costo proyectado de los servicios a escala**. El plan Free Tier no dura para siempre (está sujeto a límites por año o por volumen de invocaciones), y en etapas productivas todos los costos operativos de infraestructura deben estimarse y cobrarse para asegurar la rentabilidad del proyecto B2B.
+
+A efectos de esta estimación base, se calcula un volumen de impacto moderado-alto: **100,000 Transacciones de compras mensuales**, logueos diarios y catálogos vistos.
 
 | Servicio AWS | Tipo de Funcionalidad | Uso Estimado | Costo Estimado (Free Tier/On-Demand) |
 | :--- | :--- | :--- | :--- |
