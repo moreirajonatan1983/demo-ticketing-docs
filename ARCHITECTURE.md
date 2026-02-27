@@ -59,3 +59,10 @@ Dado el alto volumen de lecturas (usuarios buscando eventos) frente a las escrit
 
 ---
 *Este ecosistema garantiza cumplir con las expectativas de sistemas High-Traffic o Flash-Sales de la vida real mediante cloud-native serverless, sumado al músculo crudo de Kubernetes, patrones avanzados (SAGA, CQRS, PUB/SUB, Circuit Breaker) y visibilidad de grado empresarial.*
+
+## 4. Diagramas Visuales (AWS18)
+Todos los esquemas visuales y flujogramas de arquitectura se encuentran almacenados y estructurados bajo la notación oficial visual de AWS18 dentro de este repositorio:
+
+*   ▶ **[Diagrama 01: El Flujo Transaccional de Compra (SAGA/Circuit Breaker)](./diagrams/01_FLUJO_DE_COMPRA.md)**
+*   ▶ **[Diagrama 02: C4 de Contexto del Sistema de Ticketera](./diagrams/02_C4_CONTEXT.md)**
+*   ▶ **[Diagrama 03: Flujo de Login y Autenticación Cognito con JWT](./diagrams/03_AUTH_LOGIN.md)**
