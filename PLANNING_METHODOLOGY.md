@@ -9,12 +9,12 @@ Se evidencia un modelo de trabajo ágil iterativo (Scrum/Kanban) centrado estric
 Antes de escribir cualquier línea de código, se establecen las fundaciones:
 1.  **Levantamiento de Requerimientos Técnicos:** Identificar restricciones de negocio (Alta concurrencia de tickets) y requerimientos tecnológicos (Uso Exclusivo de AWS Free-Tier, Serverless, Patrones CQRS, Saga, Pub/Sub, Kubernetes).
 2.  **Arquitectura del Dominio y Diagramado:** (C4 Model).
-    *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `ARCHITECTURE.md`.
+    *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `ARCHITECTURE.md`. **Todos los diagramas deben utilizar la especificación y paleta de iconos oficiales de AWS18**.
 3.  **Provisión de Entorno AWS Multi-Cuenta:** 
     *   Creación inicial de `AWS Organizations` Accounts aislando dominios lógicos: `demo-ticketing-auth` y `demo-ticketing-core`. (Garantizando la barrera del "Blast Radius" de seguridad y límites de cuentas *Free-Tier*).
 
-### Fase 1: Setup de Infraestructura (La Base)
-*   **Decisión ADR (Architecture Decision Record)**: Se escoge la herramienta de IaC (Infraestructura como Código) que gobierna los despliegues (Ej: Serverless Framework, AWS SAM o Terraform) para maximizar reutilización y despliegues estandarizados CI/CD en GitHub Actions.
+### Fase 1: Setup de Infraestructura y Desarrollo Local
+*   **Decisión ADR (Architecture Decision Record)**: Se escoge la herramienta **AWS SAM (Serverless Application Model)** para el desarrollo, simulación local y despliegue del código Serverless hacia `demo-ticketing-core` y `demo-ticketing-auth`. El desarrollo será estrictamente "Local-First".
 *   **Dominio de Seguridad**: Creación del entorno IAM (Mínimo Privilegio) y Cognito (Autenticación) en la nueva cuenta `demo-ticketing-auth`.
 
 ### Fase 2: Construcción Central (El "Core" Backend)
@@ -22,8 +22,8 @@ Antes de escribir cualquier línea de código, se establecen las fundaciones:
 *   **TDD y Trazabilidad**: El código backend (idealmente TypeScript, Python o Go) se desarrolla con el inyector de `AWS X-Ray` activo desde el día uno y tests unitarios a los _UseCases_ de la arquitectura Hexagonal mediante mocks (sin tocar AWS localmente).
 
 ### Fase 3: Worker Híbrido y Procesos Asíncronos (Kubernetes)
-*   Se diseña el despliegue del componente Batch de la Ticketera.
-*   *Nota Free-Tier*: Al depender de EKS (el cual conlleva un costo alto base del "Control Plane") y de requerir mantenernos en *Free-Tier*, se documentarán alternativas tales como **Minikube** en instancias EC2 `t3.micro` provisionadas via IaC, o la simulación conceptual en **AWS Fargate**, evidenciando cómo una arquitectura K8S con **KEDA** escalaría ante métricas de CloudWatch sin exceder el presupuesto.
+*   Se diseña el desarrollo del componente Batch masivo de la Ticketera priorizando el desarrollo enteramente sobre ambientes **Minikube** locales.
+*   *Nota Free-Tier*: Toda demostración de clústeres orquestadores locales (Workers generando reportes o emitiendo PDFs) en Kubernetes debe ser soportada directamente en la estación de desarrollo con Minikube, sin necesidad de aprovisionar Amazon EKS (Managed Service), validando de forma completamente gratuita el desacople de sistemas basados en KEDA u operadores asíncronos.
 
 ## 2. Herramientas de Planificación (Ciclo de Gestión)
 El desarrollo y planificación de historias de usuario (Tickets/Issues) seguirá un abordaje profesional similar a Jira/Linear usando **GitHub Projects / Issues**.
@@ -43,7 +43,7 @@ Cada requerimiento arquitectónico se desagrega en un flujo:
 
 ## 3. Manejo Estratégico del Free Tier
 Asegurar que todas las opciones presenten una facturación virtual de `$0.00`:
-*   **Lambda, SQS y SN**: Generosos dentro del capa gratuita (1 millon / 1 millon por mes).
-*   **DynamoDB**: Se utilizará facturación de capacidad "On-Demand" asegurando que las pruebas de concurrencia CQRS y Saga limiten drásticamente el costo al volumen exacto procesado y no paguen RCU/WCU inactivo de base de datos encendida.
-*   **Kubernetes Control Plane Costo**: Uso de instancias spot controladas o EC2 en *Free-Tier* auto-administradas provisionadas por Terraform para la capa requerida de contenedores Docker del Worker masivo de emisión de PDFs, en lugar del gravoso costo gestionado del plano de Amazon EKS.
-*   **Supresión en Inactividad**: Todas las plantillas de Infraestructura (IaC) estarán contenidas en ambientes (Stacks/Namespaces) fácilmente destructibles (`terraform destroy` o `sam delete`) cada noche, y recreados automáticamente al retomar las sesiones de codificación con el despliegue de Github Actions.
+*   **Lambda, SQS y SNS**: Generosos dentro del capa gratuita (1 millon / 1 millon por mes). Emulados en local con AWS SAM CLI previo al salto.
+*   **DynamoDB y Aurora Min-Capacity**: Se utilizará facturación de capacidad "On-Demand" asegurando que las pruebas de concurrencia CQRS y Saga limiten drásticamente el costo al volumen exacto procesado y no paguen RCU/WCU inactivo de base de datos encendida. Emulación con `DynamoDB Local` donde se pueda.
+*   **Kubernetes (Minikube)**: Ausencia absoluta de costos por el orquestador o Control Plane gracias a operar localmente. Evita el costo mínimo de ~72$ USD mensuales de Amazon EKS, cumpliendo el requerimiento de evaluación bajo costo Cero de la autoevaluación simulando los Workers en la estación de trabajo.
+*   **Teardown Automático**: Todas las plantillas de Infraestructura desplegadas en las cuentas provisionadas por Management (`AWS Organizations`) con SAM CLI estarán contenidas en ambientes (`sam deploy --no-confirm-changeset`) fácilmente destructibles con `sam delete` al cierre de cualquier jornada.
