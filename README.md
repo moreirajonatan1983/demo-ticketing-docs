@@ -21,3 +21,5 @@ Para navegar los patrones y arquitectura de este proyecto, referirse al document
 ## 4. Gestión del Proyecto, Finanzas y Metodología
 - [**Análisis de Costos (AWS Free Tier) y Cronograma Semanal (Estimación)**](./COST_AND_TIME_ESTIMATION.md)
 - [**Metodología de Planificación (Enfoque Ágil y Teardown)**](./PLANNING_METHODOLOGY.md)
+- [**Estrategia Exhaustiva de Pruebas (Unitarias, Regresión y Alta Concurrencia/Stress)**](./TESTING_STRATEGY.md)
+- [**Diseño de Pantallas, UI/UX y Wireflows Front-End**](./ui_design/UI_UX_DESIGN.md)
