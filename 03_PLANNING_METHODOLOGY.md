@@ -28,6 +28,11 @@ Antes de escribir cualquier línea de código, se establecen las fundaciones:
 ## 2. Herramientas de Planificación (Ciclo de Gestión)
 El desarrollo y planificación de historias de usuario (Tickets/Issues) seguirá un abordaje profesional similar a Jira/Linear usando **GitHub Projects / Issues**.
 
+### 2.1 Uso de Inteligencia Artificial (IA) en la Planificación y Desarrollo
+La metodología de este proyecto adopta modelos de inteligencia artificial e ingenieros de IA como un pilar innegociable para acelerar el "Time to Market" y estructurar el Playbook:
+*   **Planificación Documental**: Agentes LLM avanzados (Gemini / Antigravity / Copilot) se utilizan para la generación acelerada de casos de borde (Edge-Cases) de validación, la redacción técnica de repositorios y los esquemas *Mermaid* que diagraman los procesos C4.
+*   **Pair-Programming y Scaffolding**: Durante la fase de desarrollo ("*En Progreso*"), el costo mensual opcinal de las licencias de las IAs se amortizará al utilizarlas para escribir la estructura base de los tests unitarios Mockeados en Kotlin o Java, y para inferir lógicas limpias de Dominio en Golang. *Nota: El costo estimado de esta tecnología/licencia se encuentra especificado en la Matriz de Costos `02_COST_AND_TIME_ESTIMATION.md`*.
+
 ### El Tablero Kanban
 Cada requerimiento arquitectónico se desagrega en un flujo:
 1.  **Backlog Técnico** (Ej. "Diseñar arquitectura SAGA con Step Functions").

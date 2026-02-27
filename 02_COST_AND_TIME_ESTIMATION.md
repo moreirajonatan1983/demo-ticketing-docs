@@ -29,6 +29,31 @@ A efectos de esta estimación base, se calcula un volumen de impacto moderado-al
 
 ---
 
+## 1.1 Comparativa de Costos: Serverless vs Arquitectura Clásica K8s
+A nivel estratégico, la Ticketera opta por Serverless frente a una arquitectura monolítica (o basada 100% en contenedores permanentes, como Amazon EKS/ECS) debido a los abismales ahorros en "Idle Time" (Tiempo Inactivo). 
+
+| Tipo de Arquitectura | Costo Inactivo (Noche/Madrugada) | Respuesta a Flash Crowds | Costo Base Mensual Mínimo |
+| :--- | :--- | :--- | :--- |
+| **Arquitectura Serverless (La nuestra)** | **$0.00** (Las Lambdas/API no cobran si no hay tráfico) | Escala en milisegundos hasta miles de instancias concurrentes | **~$9.50** (Solo el WAF fijo) |
+| **Arquitectura No-Serverless (K8s / EKS)** | Sigue facturando 100% de los Nodos EC2 ($$$) | Requiere pre-saturar Nodos (Auto-Scaling lento, demora minutos) | **~$150+** ($73 Control Plane + Nodos Fijos/Load Balancers) |
+
+*Conclusión*: Para el caso de uso del proyecto (donde el 90% de las ventas masivas suceden en una ventana de 2 horas al anunciar el evento), **Serverless previene malgastar presupuesto pagando instancias y clústeres inactivos** el resto de la semana.
+
+---
+
+## 1.2 Infraestructura de Apoyo, Opex, IA y Herramientas (Workspace Base)
+El despliegue, planificación y éxito del proyecto B2B no solo depende de AWS, sino de los Gastos de Capital (CapEx) y Operativos (OpEx) de las herramientas de trabajo y equipamiento físico diario:
+
+| Categoría | Concepto y Requisitos | Costo Aproximado / Status |
+| :--- | :--- | :--- |
+| **Hardware (Desarrollo Central)** | Apple MacBook Pro (M-Series) o Thinkpad i7/32GB RAM (Necesario para soportar IDEs pesados, Docker Desktop y Minikube locales sin latencia). | ~$1,500 - $2,500 (Gasto Fijo CapEx único) |
+| **Hardware (Despliegue/CI-CD)** | Computadora secundaria, Servidor ligero o Runner de Actions en Nube dedicado para pipeline seguro. | Incluido en GitHub Actions (Minutos Tier) |
+| **Inteligencias Artificiales (Planificación y Dev)** | Licencias de **Agentes de IA y LLMs** (Ej: Copilot, Gemini Advanced/Antigravity, o ChatGPT Plus). Utilizados intensivamente para estructurar el Playbook, diagramas visuales rápidos (Mermaid), Pair-Programming Hexagonal e ideación arquitectónica de microservicios. | ~$20.00 - $30.00 USD / mes por dev |
+| **Conectividad e Infraestructura Base** | Acceso a Internet Banda Ancha Simétrica y licencias empresariales de **GitHub** (Pro/Team) para versionado y tableros privados. | ~$50.00 USD / mes |
+| **Entornos AWS (Desarrollo y Prod)** | Gastos asociados a mantener cuentas en paralelo encendidas (`demo-ticketing-auth-backend` & `demo-ticketing-backend`). | Mitigado por *Serverless Free Tier* |
+
+---
+
 ## 2. Estimación de Esfuerzo y Cronograma Mínimo Viable (MVP)
 
 La planificación se enfoca en entregar un núcleo funcional con los patrones aplicados, sin desarrollar interfaces visuales (Front-End) fuera del alcance. 
@@ -36,7 +61,7 @@ La planificación se enfoca en entregar un núcleo funcional con los patrones ap
 **Duración Total Estimada:** 4 Semanas de Desarrollo Efectivo / 1 Desarrollador Senior / Cloud Engineer.
 
 ### Sprint 1 (Semana 1): Fundaciones y Seguridad
-*   **Gestión (Día 1-2):** Organización de Repositorios, AWS Multi-Account, Diseño Arquitectural C4 y Diagramas.
+*   **Gestión (Día 1-2):** Organización de Repositorios, AWS Multi-Account, Diseño Arquitectural C4 (**C**ontext, **C**ontainers, **C**omponents, **C**ode) y Diagramas.
 *   **Auth (Día 3-5):** Infraestructura en AWS SAM para Cognito, Pools y Configuración de Clientes OIDC, despliegue del repositorio `demo-ticketing-auth-backend`.
 
 ### Sprint 2 (Semana 2): Catálogo y Patrón CQRS
