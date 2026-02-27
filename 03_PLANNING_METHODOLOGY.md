@@ -9,7 +9,7 @@ Se evidencia un modelo de trabajo ágil iterativo (Scrum/Kanban) centrado estric
 Antes de escribir cualquier línea de código, se establecen las fundaciones:
 1.  **Levantamiento de Requerimientos Técnicos:** Identificar restricciones de negocio (Alta concurrencia de tickets) y requerimientos tecnológicos (Uso Exclusivo de AWS Free-Tier, Serverless, Patrones CQRS, Saga, Pub/Sub, Kubernetes).
 2.  **Arquitectura del Dominio y Diagramado:** (C4 Model).
-    *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `ARCHITECTURE.md`. **Todos los diagramas deben utilizar la especificación y paleta de iconos oficiales de AWS18**.
+    *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `01_ARCHITECTURE.md`. **Todos los diagramas deben utilizar la especificación y paleta de iconos oficiales de AWS18**.
 3.  **Provisión de Entorno AWS Multi-Cuenta:** 
     *   Creación inicial de `AWS Organizations` Accounts aislando dominios lógicos: `demo-ticketing-auth-backend` y `demo-ticketing-backend`. (Garantizando la barrera del "Blast Radius" de seguridad y límites de cuentas *Free-Tier*).
 
