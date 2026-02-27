@@ -22,8 +22,14 @@ La plataforma `demo-ticketing` no sólo ostentará una robusta ingeniería backe
 - Opciones de Social Login (Google) configurado en el User Pool OIDC.
 - Formularios fluidos para "Forgot Password" conectados al flujo Cognito SRP nativo.
 
-### 2.3 Pantalla Detalle de Evento: "Checkout - Paso 1" (`/events/{event_id}`)
-*Punto donde empieza el riesgo de alta concurrencia. Aquí inician el polling del estado real de los asientos.*
+### 2.3 Sala de Espera Virtual (Queue Room)
+*Punto de contención temporal frente a "Flash Sales". Se activa si un evento supera el umbral X de concurrentes.*
+- Diseño minimalista para consumir el menor ancho de banda posible.
+- Contador regresivo en tiempo real ("Estás en la posición #543 de la fila virtual").
+- Alerta al navegador/usuario cuando es su turno emitiendo un sonido y otorgándole una ventana de 3 minutos para pasar al Checkout antes de perder su "bolsa" temporal.
+
+### 2.4 Pantalla Detalle de Evento: "Checkout - Paso 1" (`/events/{event_id}`)
+*Punto donde empieza el riesgo de alta concurrencia. Aquí inician el polling del estado real de los asientos bajo la supervisión de la Sala de Espera.*
 - Detalles descriptivos del concierto e imágenes inmutables subidas via S3 CDN.
 - **Mapa de Asientos o Sectores (Seating Planner)**: Panel de botones interactivos donde localidades temporalmente bloqueadas (por la Lambda SAGA Reservadora de otra persona) se colorean "Gris/Bloqueadas" gracias a WebSockets/Polling corto contra API Gateway.
 - Botón principal flotante (Sticky): "Añadir a carrito" con loader asíncrono.

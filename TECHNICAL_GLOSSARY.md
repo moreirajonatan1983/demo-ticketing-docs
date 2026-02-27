@@ -20,6 +20,7 @@ Para mantener coherencia transversal en la arquitectura y facilitar la revisión
 
 ## 3. Dominio de Cargas Altas (Ticketera)
 
+*   **Virtual Waiting Room (Sala de Espera Virtual)**: Un componente Cloud (usualmente alojado en el Edge/CDN o vía servicios ultra veloces como AWS ElastiCache) que se activa automáticamente al detectar una avalancha inminente (Flash Crowd) y rutea el exceso de tráfico a una fila virtual cronometrada. Su objetivo final es resguardar la disponibilidad de la base de datos principal (`Zero Downtime`).
 *   **Flash Crowd / Flash Sale (Avalancha)**: Situación recurrente y perjudicial donde un servicio digital que rutinariamente tiene tráfico bajo se ve inundado en segundos (Miles/Millones de personas) causando Cuellos de Botella (Bottlenecking) o parálisis debido al lanzamiento de un producto codiciado de stock limitado.
 *   **Throttling (Aceleración/Restricción de Tráfico)**: El acto del `API Gateway` de rechazar peticiones adicionales de un usuario excedido, devolviendo comúnmente una respuesta HTTP `429 Too Many Requests`.
 *   **Optimistic Locking (Bloqueo Optimista)**: Técnica de base de datos para prevenir colisiones cuando mil personas quieren escribir (comprar) al mismo objeto (ej. Asiento B4). DynamoDB lo resuelve eximiendo que se haga un *Update* sin antes comprobar si una "Versión" del registro es coincidente con la leída.

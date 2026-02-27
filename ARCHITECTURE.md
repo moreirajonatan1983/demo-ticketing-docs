@@ -31,7 +31,10 @@ Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la ges
 
 ### 2.3 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-core`)
 
-#### A. Patrón CQRS (Command & Query)
+#### A. Sala de Espera Virtual (Virtual Waiting Room)
+Componente periférico que intercepta el tráfico de una entrada antes de que alcance las APIs transaccionales. Emplea un sistema en memoria (ej: Amazon ElastiCache / Redis) para ordenar a los usuarios y asignarles una posición en la fila frente a picos de demanda, permitiéndoles entrar de forma racionada y controlada al checkout (Mitigación total de Flash Crowds).
+
+#### B. Patrón CQRS (Command & Query)
 Dado el alto volumen de lecturas (usuarios buscando eventos) frente a las escrituras puntuales y críticas (generación de una orden de compra), el sistema se divide de la siguiente manera:
 *   **Command Model (Escrituras)**: Las órdenes de compra (Commands) apuntan vía API Gateway a Lambdas que insertan atómicamente en **Amazon DynamoDB**. Usamos Step Functions para el ciclo de vida complejo de las mutaciones.
 *   **Query Model (Lecturas)**: Un flujo secundario proyecta los eventos de DynamoDB Streams (Pub/Sub) hacia una base de datos más óptima para búsquedas y filtros complejos y reportes (por ejemplo, **Amazon Aurora Serverless** o **Amazon OpenSearch / ElasticSearch**). Las Lambdas de lectura leen exclusivamente de aquí, sin tocar ni bloquear las tablas críticas de transacciones (DynamoDB).
@@ -66,3 +69,4 @@ Todos los esquemas visuales y flujogramas de arquitectura se encuentran almacena
 *   ▶ **[Diagrama 01: El Flujo Transaccional de Compra (SAGA/Circuit Breaker)](./diagrams/01_FLUJO_DE_COMPRA.md)**
 *   ▶ **[Diagrama 02: C4 de Contexto del Sistema de Ticketera](./diagrams/02_C4_CONTEXT.md)**
 *   ▶ **[Diagrama 03: Flujo de Login y Autenticación Cognito con JWT](./diagrams/03_AUTH_LOGIN.md)**
+*   ▶ **[Diagrama 04: Estrategia de Sala de Espera Virtual (Queue/Flash Crowd)](./diagrams/04_WAITING_ROOM.md)**
