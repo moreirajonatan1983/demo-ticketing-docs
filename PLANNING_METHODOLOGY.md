@@ -11,15 +11,15 @@ Antes de escribir cualquier línea de código, se establecen las fundaciones:
 2.  **Arquitectura del Dominio y Diagramado:** (C4 Model).
     *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `ARCHITECTURE.md`. **Todos los diagramas deben utilizar la especificación y paleta de iconos oficiales de AWS18**.
 3.  **Provisión de Entorno AWS Multi-Cuenta:** 
-    *   Creación inicial de `AWS Organizations` Accounts aislando dominios lógicos: `demo-ticketing-auth` y `demo-ticketing-core`. (Garantizando la barrera del "Blast Radius" de seguridad y límites de cuentas *Free-Tier*).
+    *   Creación inicial de `AWS Organizations` Accounts aislando dominios lógicos: `demo-ticketing-auth` y `demo-ticketing-backend`. (Garantizando la barrera del "Blast Radius" de seguridad y límites de cuentas *Free-Tier*).
 
 ### Fase 1: Setup de Infraestructura y Desarrollo Local
-*   **Decisión ADR (Architecture Decision Record)**: Se escoge la herramienta **AWS SAM (Serverless Application Model)** para el desarrollo, simulación local y despliegue del código Serverless hacia `demo-ticketing-core` y `demo-ticketing-auth`. El desarrollo será estrictamente "Local-First".
+*   **Decisión ADR (Architecture Decision Record)**: Se escoge la herramienta **AWS SAM (Serverless Application Model)** para el desarrollo, simulación local y despliegue del código Serverless hacia `demo-ticketing-backend` y `demo-ticketing-auth`. El desarrollo será estrictamente "Local-First".
 *   **Dominio de Seguridad**: Creación del entorno IAM (Mínimo Privilegio) y Cognito (Autenticación) en la nueva cuenta `demo-ticketing-auth`.
 
 ### Fase 2: Construcción Central (El "Core" Backend)
 *   **Patrones Funcionales**: Se decide la **Arquitectura Hexagonal (Ports & Adapters)** dentro de cada uno de los microservicios/Lambdas core. El Dominio (Ej. Entidades como de Orden/Compra) se aloja en el núcleo abstracto, aislando todas las interacciones de los Frameworks (AWS SDK, Redis, SQS, API Gateway).
-*   **TDD y Trazabilidad**: El código backend (idealmente TypeScript, Python o Go) se desarrolla con el inyector de `AWS X-Ray` activo desde el día uno y tests unitarios a los _UseCases_ de la arquitectura Hexagonal mediante mocks (sin tocar AWS localmente).
+*   **TDD y Trazabilidad**: El código backend Serverless (**Node.js y Go**) y los workers Kubernetes (**Java 21**) se desarrollan con el inyector de `AWS X-Ray` activo desde el día uno y tests unitarios a los _UseCases_ de la arquitectura Hexagonal mediante mocks (sin tocar AWS localmente).
 
 ### Fase 3: Worker Híbrido y Procesos Asíncronos (Kubernetes)
 *   Se diseña el desarrollo del componente Batch masivo de la Ticketera priorizando el desarrollo enteramente sobre ambientes **Minikube** locales.

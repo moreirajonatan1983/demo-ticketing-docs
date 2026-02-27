@@ -13,7 +13,9 @@ Se aplican explícitamente conceptos de observabilidad (métricas y alarmas en C
 
 - **[demo-ticketing-docs](./)**: Repositorio actual. Contiene las definiciones estratégicas de arquitectura ([`ARCHITECTURE.md`](./ARCHITECTURE.md)), flujogramas de procesos, diagramas y decisiones.
 - **`demo-ticketing-auth`**: Autenticación, Roles, Pool de Usuarios (Compradores y Admins), Seguridad IAM, WAF y pasarela principal de identidades (Cognito).
-- **`demo-ticketing-core`**: Núcleo de la plataforma (Catálogo de eventos, Inventario, Flujo de Pago - SAGA -, Workers en K8s para envíos de Emails/Reportes y Bus de Eventos).
+- **`demo-ticketing-backend`**: Núcleo de la plataforma. Microservicios Serverless para API en **Go / Node.js** (Catálogo, Checkout SAGA) y Workers en **Java 21 (Spring / JVM)** desplegados en Kubernetes para envíos masivos y Reportes.
+- **`demo-ticketing-web`**: SPA Web construida en **React + TypeScript + Vanilla CSS**, optimizada con Glassmorphism para la UX de compras de clientes finales.
+- **`demo-ticketing-android`**: App móvil nativa B2C en **Kotlin/Jetpack Compose**, consumiendo el Backend y Cognito para la compra y visualización de tickets en celular.
 
 ## 3. Arquitectura y Tecnologías
 Para navegar los patrones y arquitectura de este proyecto, referirse al documento [**Arquitectura Core / Diagramas Visuales**](./ARCHITECTURE.md).

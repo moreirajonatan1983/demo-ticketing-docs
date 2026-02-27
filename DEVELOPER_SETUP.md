@@ -10,15 +10,15 @@ Deberás tener instalado en tu estación de trabajo (macOS, Linux o Windows WSL2
 2.  **AWS CLI**: Configurado con un perfil local, aunque apunte a credenciales temporales o dummy para pruebas de Mock.
 3.  **AWS SAM CLI**: La herramienta oficial para emular y compilar `AWS Lambda` localmente, y levantar APIs enteras de forma local con Docker.
 4.  **Minikube & `kubectl`**: El simulador de clúster Kubernetes local para levantar el Worker de reportes/compresión.
-5.  **Golang 1.21+ o Node.js 20+** (Revisar repositorio local específico): Dependiendo de sobre qué runtime iteraremos los microservicios core.
+5.  **Golang 1.21+, Node.js 20+ y Java 21**: Go y Node.js se utilizarán para compilar los microservicios Serverless (`demo-ticketing-backend`), mientras que Java 21 es mandatorio para compilar y empaquetar en Docker los Workers de Kubernetes.
 
 ---
 
 ## 2. Levantando el Entorno Serverless (Ticketera Core)
 
-El repositorio `demo-ticketing-core` aloja la arquitectura AWS. Se utiliza **SAM Local** para levantar la API transaccional en el puerto `3000`.
+El repositorio `demo-ticketing-backend` aloja la arquitectura AWS. Se utiliza **SAM Local** para levantar la API transaccional en el puerto `3000`.
 
-1.  Clonar el repositorio y entrar: `cd demo-ticketing-core`.
+1.  Clonar el repositorio y entrar: `cd demo-ticketing-backend`.
 2.  Ejecutar el build del motor SAM:
     ```bash
     sam build

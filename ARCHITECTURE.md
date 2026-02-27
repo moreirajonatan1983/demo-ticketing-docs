@@ -20,7 +20,7 @@ Se trata de una plataforma orientada a la venta masiva de entradas para eventos 
 Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la gestión centralizada de facturación (consolidada bajo el **Free Tier**), la infraestructura se despliega bajo una organización Multi-Account regida por el servicio **AWS Organizations**.
 *   **CollieTech Management (`658947469588`)**: Cuenta administrativa de gobernanza. Se utiliza exclusivamente para orquestar la creación del resto de sub-cuentas y administrar Service Control Policies (SCPs). No aloja cargas de trabajo.
 *   **demo-ticketing-auth**: Cuenta esclava dedicada de forma aislada a los recursos de identidad (Cognito, IAM Roles).
-*   **demo-ticketing-core**: Cuenta dedicada a alojar el núcleo de la aplicación, bases de datos DynamoDB, el Bus de Eventos y el poder de cómputo Serverless.
+*   **demo-ticketing-backend**: Cuenta dedicada a alojar el núcleo de la aplicación, bases de datos DynamoDB, el Bus de Eventos y el poder de cómputo Serverless.
 ### 2.1 Front-End / Consolas
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
 
@@ -29,7 +29,12 @@ Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la ges
 *   **AWS IAM**: Políticas y roles restrictivos de mínimo privilegio.
 *   **AWS WAF**: Protección del API Gateway frente a ataques DDoS (Bot Control, Rate Limiting).
 
-### 2.3 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-core`)
+### 2.3 Web App y Client (Repositorios: `demo-ticketing-web` y `demo-ticketing-android`)
+*   **`demo-ticketing-web`**: Single Page Application (SPA) construida con **React (Vite), TypeScript y Vanilla CSS** apuntando a una estética premium (Glassmorphism, animations). Estará alojada en S3 + CloudFront en producción simulada.
+*   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume la misma API Gateway de backend que la versión web.
+
+### 2.4 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-backend`)
+*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en Kubernetes (Minikube) estarán desarrollados en **Java 21**, aprovechando el enorme potencial multi-threading y el ecosistema robusto de la JVM para reportes masivos.*
 
 #### A. Sala de Espera Virtual (Virtual Waiting Room)
 Componente periférico que intercepta el tráfico de una entrada antes de que alcance las APIs transaccionales. Emplea un sistema en memoria (ej: Amazon ElastiCache / Redis) para ordenar a los usuarios y asignarles una posición en la fila frente a picos de demanda, permitiéndoles entrar de forma racionada y controlada al checkout (Mitigación total de Flash Crowds).
@@ -51,9 +56,10 @@ Dado el alto volumen de lecturas (usuarios buscando eventos) frente a las escrit
     *   Una Lambda que inyecta en **Amazon Pinpoint / SNS** para emitir **Notificaciones Push** (Push Notifications SMS/Firebase) a la App del cliente y envío de Email (`Amazon SES`).
     *   Un SQS Queue para alimentar al motor en background de reportística.
 
-#### D. Worker Batch y Procesamiento Intenso (Orquestación en Kubernetes)
+#### D. Worker Batch y Procesamiento Intenso (Orquestación en Kubernetes - Java 21)
 *   **Amazon EKS (Elastic Kubernetes Service)**:
     *   Procesos muy pesados asíncronos que no caben en Lambdas: Generación de consolidado contable en Excel/CSV, procesamiento de videos o imágenes de los "flyers" del evento, generación batch de los millares de PDFs con códigos QR asegurados con firmas criptográficas.
+    *   Para estas tareas se emplearán microservicios estructurados en **Java 21** optimizados para cargas batch.
     *   **KEDA**: Kubernetes Event-driven Autoscaling, que lanza Pods reactivamente cuando se acumulan mensajes en la cola de SQS. Una vez terminados, envía el archivo al **Amazon S3**.
 
 ## 3. Observabilidad & Trazabilidad

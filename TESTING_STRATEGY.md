@@ -8,7 +8,7 @@ Dada la arquitectura hexagonal, nuestras aserciones y "mocks" se ejecutan al niv
 
 ## 1. Pruebas Unitarias (Unit Testing)
 Enfoque: **TDD (Test-Driven Development) sobre el Core Hexagonal**.
-- **Herramientas Previstas**: `Jest` o `Vitest` (si TS/Node), `testing` o `testify` (si Golang).
+- **Herramientas Previstas**: `Jest` o `Vitest` (Node.js), `testing` o `testify` (Golang) para Serverless. Para K8S Workers (Java 21), se utilizará `JUnit 5` y `Mockito`.
 - **Cobertura Objetivo**: Mínimo 85% sobre el dominio lógico (Use Cases, Entities).
 - **Alcance Funcional**:
   - Validar lógica de negocio del carrito (descuentos, reglas paramétricas).
