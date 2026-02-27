@@ -13,7 +13,7 @@ C4Context
     System(ticketera, "Ticketera Cloud System", "SaaS Core (Nuestra Aplicación). Gestiona el catálogo, concurrencia, autorizaciones, compras y emisiones de PDF masivos.")
     
     System_Ext(gateway_pago, "Pasarela de Pagos (Stripe/MercadoPago)", "Procesa y verifica la transaccionalidad de tarjetas de crédito o débito a los compradores.")
-    System_Ext(cognito_auth, "Identity Provider (demo-ticketing-auth)", "Servicio en cuenta AWS dedicada a delegar la identidad de compradores y la capa de administración usando credenciales.")
+    System_Ext(cognito_auth, "Identity Provider (demo-ticketing-auth-backend)", "Servicio en cuenta AWS dedicada a delegar la identidad de compradores y la capa de administración usando credenciales.")
     System_Ext(notificaciones, "Push Notification & Email Service", "Medio por el que los clientes se enteran de novedades e imprevistos instantáneos o envíos transaccionales (AWS SNS / SES).")
     
     Rel(user, ticketera, "Busca eventos, se loguea y compra entradas", "HTTPS")

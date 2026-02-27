@@ -1,6 +1,6 @@
 # Diagrama de Autenticación Centralizada y Seguridad (Login)
 
-La topología de seguridad se encuentra gobernada por **Amazon Cognito** (dentro del repositorio e infraestructura `demo-ticketing-auth`).
+La topología de seguridad se encuentra gobernada por **Amazon Cognito** (dentro del repositorio e infraestructura `demo-ticketing-auth-backend`).
 
 **Sobre JWT:** Amazon Cognito es 100% compatible con los estándares de OpenID Connect (OIDC) y OAuth2. Esto significa que **sí, Cognito utiliza directamente tokens JWT**. Cuando un usuario se autentica de forna exitosa, Cognito emite:
 1.  **Id_Token**: Un JSON Web Token (JWT) que contiene claims sobre la identidad directa del usuario (Email, Nombre, ID Subjetivo de usuario).

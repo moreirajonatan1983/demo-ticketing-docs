@@ -10,7 +10,7 @@ Dada la naturaleza crítica de alta concurrencia en la venta de entradas ("Flash
 
 ### Fases del Onboarding:
 1. **Punto de Ingreso Integrado**: Al clickear "Comprar Entrada" en un evento, un modal intercepta al usuario no logueado.
-2. **Social Sign-On (SSO)**: Opciones predominantes para **"Continuar con Google"** o **"Continuar con Apple"**. Esto interactúa con el sub-sistema de `demo-ticketing-auth` (Amazon Cognito User Pools) creando la cuenta instantáneamente.
+2. **Social Sign-On (SSO)**: Opciones predominantes para **"Continuar con Google"** o **"Continuar con Apple"**. Esto interactúa con el sub-sistema de `demo-ticketing-auth-backend` (Amazon Cognito User Pools) creando la cuenta instantáneamente.
 3. **Registro Tradicional (Fallback)**: 
    - Captura de Email y Password.
    - **Validación Asíncrona (OTP)**: AWS Cognito dispara automáticamente un email de validación mediante Amazon SES con un PIN numérico de 6 dígitos.

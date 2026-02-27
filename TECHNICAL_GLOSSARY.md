@@ -8,6 +8,7 @@ Para mantener coherencia transversal en la arquitectura y facilitar la revisión
 *   **Circuit Breaker (Cortocircuito)**: Patrón de diseño que previene llamadas consecutivas a un servicio remoto o base de datos que está reportando fallos recurrentes, desviando el tráfico (o respondiendo error rápido) temporalmente ("Circuito Abierto").
 *   **Pub/Sub (Publicador/Suscriptor)**: Patrón de mensajería asíncrona donde los envíos de mensajes ("Publishers") publican o emiten eventos hacia un "Topic" o "Bus", sin saber qué entidades van a terminar consumiendo ("Subscribers").
 *   **CQRS (Command-Query Responsibility Segregation)**: Patrón donde las clases, funciones o tablas exclusivas que leen datos (*Queries*) se encuentran rígidamente separadas de aquellas enfocadas en mutar (escribir, cambiar, borrar) datos (*Commands*).
+*   **BFF (Backend For Frontend)**: Patrón de diseño donde cada cliente específico (Ej. Móvil vs Web) posee su propia capa/servidor de API Gateway a medida en el backend. Esto permite retornar al celular solo los bytes que realmente necesita, agregando múltiples llamadas complejas del Core en una sola petición simplificada para el front-end.
 *   **Hexagonal Architecture (Ports and Adapters)**: Arquitectura de software en donde el Dominio o Regla de Negocio es el centro (Hexágono) completamente limpio e independiente, mientras el mundo exterior (APIs, Bases de Datos) se maneja puramente inyectando Adaptadores mediante Puertos (Interfaces).
 
 ## 2. Conceptos AWS / Cloud-Native

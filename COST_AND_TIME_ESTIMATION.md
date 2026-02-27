@@ -35,7 +35,7 @@ La planificación se enfoca en entregar un núcleo funcional con los patrones ap
 
 ### Sprint 1 (Semana 1): Fundaciones y Seguridad
 *   **Gestión (Día 1-2):** Organización de Repositorios, AWS Multi-Account, Diseño Arquitectural C4 y Diagramas.
-*   **Auth (Día 3-5):** Infraestructura en AWS SAM para Cognito, Pools y Configuración de Clientes OIDC, despliegue del repositorio `demo-ticketing-auth`.
+*   **Auth (Día 3-5):** Infraestructura en AWS SAM para Cognito, Pools y Configuración de Clientes OIDC, despliegue del repositorio `demo-ticketing-auth-backend`.
 
 ### Sprint 2 (Semana 2): Catálogo y Patrón CQRS
 *   **Infra Base (Día 1):** Creación de las Tablas maestras transaccionales en DynamoDB (Commands).

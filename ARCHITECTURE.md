@@ -19,19 +19,20 @@ Se trata de una plataforma orientada a la venta masiva de entradas para eventos 
 ### 2.0 Topología de Cuentas (AWS Organizations)
 Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la gestión centralizada de facturación (consolidada bajo el **Free Tier**), la infraestructura se despliega bajo una organización Multi-Account regida por el servicio **AWS Organizations**.
 *   **CollieTech Management (`658947469588`)**: Cuenta administrativa de gobernanza. Se utiliza exclusivamente para orquestar la creación del resto de sub-cuentas y administrar Service Control Policies (SCPs). No aloja cargas de trabajo.
-*   **demo-ticketing-auth**: Cuenta esclava dedicada de forma aislada a los recursos de identidad (Cognito, IAM Roles).
+*   **demo-ticketing-auth-backend**: Cuenta esclava dedicada de forma aislada a los recursos de identidad (Cognito, IAM Roles) y a los lambdas de triggers o pre/post sign-up de autenticación.
 *   **demo-ticketing-backend**: Cuenta dedicada a alojar el núcleo de la aplicación, bases de datos DynamoDB, el Bus de Eventos y el poder de cómputo Serverless.
 ### 2.1 Front-End / Consolas
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
 
-### 2.2 Seguridad, Autenticación y Autorización (Repositorio: `demo-ticketing-auth`)
+### 2.2 Seguridad, Autenticación y Autorización (Repositorio: `demo-ticketing-auth-backend`)
 *   **Amazon Cognito**: Manejo de Pool de Usuarios (Compradores) y un grupo de Administradores (Productores de eventos).
 *   **AWS IAM**: Políticas y roles restrictivos de mínimo privilegio.
 *   **AWS WAF**: Protección del API Gateway frente a ataques DDoS (Bot Control, Rate Limiting).
 
 ### 2.3 Web App y Client (Repositorios: `demo-ticketing-web` y `demo-ticketing-android`)
-*   **`demo-ticketing-web`**: Single Page Application (SPA) construida con **React (Vite), TypeScript y Vanilla CSS** apuntando a una estética premium (Glassmorphism, animations). Estará alojada en S3 + CloudFront en producción simulada.
-*   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume la misma API Gateway de backend que la versión web.
+*   **Patrón BFF (Backend For Frontend)**: Para evitar que la Web y la App móvil consuman APIs genéricas pesadas o hagan excesivos llamados de red, la plataforma implementará el patrón **BFF**. Se pondrá al frente un Gateway/Servicio intermedio optimizado y dedicado para la Web, y otro moldeado con menor payload exclusivamente para Android. 
+*   **`demo-ticketing-web`**: Single Page Application (SPA) construida con **React (Vite), TypeScript y Vanilla CSS** apuntando a una estética premium (Glassmorphism, animations). Estará alojada en S3 + CloudFront en producción simulada. Su BFF particular le entregará los datos ya agregados para listado de eventos.
+*   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume un BFF optimizado para redes móviles con payloads más reducidos.
 
 ### 2.4 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-backend`)
 *Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en Kubernetes (Minikube) estarán desarrollados en **Java 21**, aprovechando el enorme potencial multi-threading y el ecosistema robusto de la JVM para reportes masivos.*

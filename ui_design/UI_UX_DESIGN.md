@@ -1,6 +1,6 @@
 # Diseño de Pantallas y Experiencia de Usuario (UI/UX)
 
-La plataforma `demo-ticketing` no sólo ostentará una robusta ingeniería backend. Para demostrar un nivel "Enterprise" integral, se especifica la arquitectura y flujos front-end mínimos requeridos de una Web App consumidora (SPA - React/Next.js/Vue) interactuando contra `demo-ticketing-backend` y `demo-ticketing-auth`.
+La plataforma `demo-ticketing` no sólo ostentará una robusta ingeniería backend. Para demostrar un nivel "Enterprise" integral, se especifica la arquitectura y flujos front-end mínimos requeridos de una Web App consumidora (SPA - React/Next.js/Vue) interactuando contra `demo-ticketing-backend` y `demo-ticketing-auth-backend`.
 
 ## 1. Patrón Visual General
 - **Estética "Premium" Moderno**: Glassmorphism (paneles ligeramente translúcidos), gradientes oscuros o 'Dark Mode' por defecto, tipografía moderna sin serifa (e.g. `Inter`, `Manrope`), y skeleton loaders para indicar procesamiento asíncrono sin bloquear la pantalla al usuario.
