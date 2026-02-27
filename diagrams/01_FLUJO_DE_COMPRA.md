@@ -11,30 +11,30 @@ flowchart TD
     
     %% Módulo Step Functions (Patrón Saga)
     subgraph Saga[Transacción de Compra SAGA]
-        SF --> L_Reservar[Lambda: ReserveTicket<br/>(Bloqueo Optimista)]
-        L_Reservar --> DB_Reserva[(DynamoDB:<br/>Reservar Asiento)]
-        L_Reservar -.-> |"Éxito"| L_Pago[Lambda: ProcessPayment]
+        SF --> L_Reservar["Lambda: ReserveTicket<br/>(Bloqueo Optimista)"]
+        L_Reservar --> DB_Reserva[("DynamoDB:<br/>Reservar Asiento")]
+        L_Reservar -.-> |"Éxito"| L_Pago["Lambda: ProcessPayment"]
         
         %% Circuit Breaker del Pago
         subgraph CB[Patrón Circuit Breaker]
-            L_Pago --> |"3. Intentar Cobro"| PG{Pasarela Externa Simulada}
-            PG --"Aceptado"--> L_Confirmar[Lambda: ConfirmTicket]
-            PG --"Timeout/Caída / Circuito Abierto"--> L_Compensacion[Lambda: ReleaseTicket<br/>(Bloqueo Rollback)]
+            L_Pago --> |"3. Intentar Cobro"| PG{"Pasarela Externa Simulada"}
+            PG --"Aceptado"--> L_Confirmar["Lambda: ConfirmTicket"]
+            PG --"Timeout/Caída / Circuito Abierto"--> L_Compensacion["Lambda: ReleaseTicket<br/>(Bloqueo Rollback)"]
         end
         
-        L_Compensacion --> DB_Libera[(DynamoDB:<br/>Liberar Asiento)]
-        L_Confirmar --> DB_Confirma[(DynamoDB:<br/>Ticket Pagado)]
+        L_Compensacion --> DB_Libera[("DynamoDB:<br/>Liberar Asiento")]
+        L_Confirmar --> DB_Confirma[("DynamoDB:<br/>Ticket Pagado")]
     end
     
     %% Módulo Pub/Sub
     subgraph AsincroniaPubSub[Eventos Posteriores (Pub/Sub)]
-        DB_Confirma --> |"4. Emite Evento Atómico"| Stream[DynamoDB Streams]
-        Stream --> EB[EventBridge Bus: TicketPurchased]
+        DB_Confirma --> |"4. Emite Evento Atómico"| Stream["DynamoDB Streams"]
+        Stream --> EB["EventBridge Bus: TicketPurchased"]
         
-        EB --> |"Desacoplado"| Notifier[Lambda: Email/Push]
-        Notifier --> SNS_Pinpoint(((Amazon Pinpoint / SNS<br/>Push notification)))
+        EB --> |"Desacoplado"| Notifier["Lambda: Email/Push"]
+        Notifier --> SNS_Pinpoint((("Amazon Pinpoint / SNS<br/>Push notification")))
         
-        EB --> |"Encola para el Worker"| SQS[Amazon SQS]
+        EB --> |"Encola para el Worker"| SQS["Amazon SQS"]
         SQS --> KEDA[Minikube Cluster / Worker]
         KEDA --> |"Genera PDF masivo"| S3[(Amazon S3)]
     end

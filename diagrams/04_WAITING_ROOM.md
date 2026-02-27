@@ -18,10 +18,10 @@ flowchart TD
     CloudFront --> |"2. Verifica Token de Turno"| WAF[AWS WAF / API Gateway]
     
     subgraph WaitingRoomVirtual [Subsistema: Sala de Espera]
-        WAF -- "Sin Turno Válido" --> L_Queue[Lambda: Asignar Turno]
-        L_Queue --> Redis[(Amazon ElastiCache: Redis)]
+        WAF -- "Sin Turno Válido" --> L_Queue["Lambda: Asignar Turno"]
+        L_Queue --> Redis[("Amazon ElastiCache: Redis")]
         Redis -.-> |"Mantiene posición y timestamp"| L_Queue
-        L_Queue -- "Responde con Posición" --> UI_Espera{Pantalla: 'Estás en la Fila'}
+        L_Queue -- "Responde con Posición" --> UI_Espera{"Pantalla: Estás en la Fila"}
         
         UI_Espera --> |"3. Polling cada X segudos"| WAF
     end
@@ -29,7 +29,7 @@ flowchart TD
     subgraph CoreAccess [Acceso Habilitado al Core transaccional]
         Redis -- "Cuando llega su turno" --> L_Queue
         L_Queue -- "Emite JWT Turno Pasaporte" --> UI_Espera
-        UI_Espera --> |"4. Redirige al Checkout"| APIGW_Core[API Gateway: Ticketing Core]
+        UI_Espera --> |"4. Redirige al Checkout"| APIGW_Core["API Gateway: Ticketing Core"]
     end
 ```
 
