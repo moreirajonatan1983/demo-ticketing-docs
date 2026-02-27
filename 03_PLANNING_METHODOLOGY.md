@@ -29,9 +29,10 @@ Antes de escribir cualquier línea de código, se establecen las fundaciones:
 El desarrollo y planificación de historias de usuario (Tickets/Issues) seguirá un abordaje profesional similar a Jira/Linear usando **GitHub Projects / Issues**.
 
 ### 2.1 Uso de Inteligencia Artificial (IA) en la Planificación y Desarrollo
-La metodología de este proyecto adopta modelos de inteligencia artificial e ingenieros de IA como un pilar innegociable para acelerar el "Time to Market" y estructurar el Playbook:
-*   **Planificación Documental**: Agentes LLM avanzados (Gemini / Antigravity / Copilot) se utilizan para la generación acelerada de casos de borde (Edge-Cases) de validación, la redacción técnica de repositorios y los esquemas *Mermaid* que diagraman los procesos C4.
-*   **Pair-Programming y Scaffolding**: Durante la fase de desarrollo ("*En Progreso*"), el costo mensual opcinal de las licencias de las IAs se amortizará al utilizarlas para escribir la estructura base de los tests unitarios Mockeados en Kotlin o Java, y para inferir lógicas limpias de Dominio en Golang. *Nota: El costo estimado de esta tecnología/licencia se encuentra especificado en la Matriz de Costos `02_COST_AND_TIME_ESTIMATION.md`*.
+La metodología de este proyecto adopta modelos de inteligencia artificial e ingenieros de IA como un pilar innegociable para acelerar el "Time to Market" y estructurar el Playbook. Se estipula la utilización de la herramienta **Google Antigravity**:
+*   **Planificación Documental**: Agentes LLM avanzados como Antigravity se utilizan para la generación acelerada de casos de borde (Edge-Cases) de validación, la redacción técnica de repositorios y los esquemas *Mermaid* que diagraman los procesos C4.
+*   **Pair-Programming y Scaffolding**: Durante la fase de desarrollo ("*En Progreso*"), el costo/suscripción mensual de esta IA se amortizará al utilizarla para escribir la estructura base de los tests unitarios en Node, Java y Go.
+*   **Límites de Suscripción**: Trabajar en un proyecto de decenas de miles de líneas (8hs de lunes a viernes en un mes entero) requeriría millones de tokens *Input/Output*. Un plan Antigravity "Gratuito o Standard" enfrentaría *Rate-Limits* (Cuellos de botella de peticiones), por lo que metodológicamente se asume que el desarrollador dispone de la **versión Antigravity Developer/Pro**, garantizando un context-window holgado para refactorizar flujos masivos de código sin interrupciones operativas.
 
 ### El Tablero Kanban
 Cada requerimiento arquitectónico se desagrega en un flujo:
