@@ -18,26 +18,29 @@ Para garantizar el **aislamiento de recursos**, **seguridad (Blast Radius)** y *
 | Cuenta | Ambiente | Propósito |
 |---|---|---|
 | **demo-ticketing-management** | - | Cuenta Raíz / Gobernanza. Orquesta sub-cuentas y SCPs. No aloja workloads. |
-| **demo-ticketing-operations-stage** | Stage | Cuenta de servicios compartidos de STAGE: S3 para `.tfstate`, ECR para imágenes Docker, logs centralizados CloudWatch. |
-| **demo-ticketing-operations-prod** | Prod | Cuenta de servicios compartidos de PROD: S3 para `.tfstate`, ECR para imágenes Docker, logs centralizados CloudWatch. |
+| **demo-ticketing-operations-stage** | Stage | Servicios compartidos STAGE: S3 para `.tfstate`, ECR para imágenes Docker. |
+| **demo-ticketing-operations-prod** | Prod | Servicios compartidos PROD: S3 para `.tfstate`, ECR para imágenes Docker. |
 | **demo-ticketing-auth-stage** | Stage | Cognito User Pool STAGE, IAM Roles, Lambdas de auth triggers. JWTs de Stage aislados de Prod. |
 | **demo-ticketing-auth-prod** | Prod | Cognito User Pool PROD, IAM Roles, Lambdas de auth triggers. |
 | **demo-ticketing-stage** | Stage | Núcleo de la aplicación STAGE: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
 | **demo-ticketing-prod** | Prod | Núcleo de la aplicación PROD: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
+| **demo-ticketing-monitoring** | Todos | Cuenta centralizada de observabilidad: CloudWatch cross-account, CloudTrail org-wide, alarmas y dashboards. |
 
 #### Jerarquía Visual
 ```
 AWS Organizations (Root)
-└── demo-ticketing-management  (Governance)
+└── demo-ticketing-management          (Governance / Raíz)
     ├── OU: Operations
-    │   ├── demo-ticketing-operations-stage  (tfstate S3, ECR, Logs STAGE)
-    │   └── demo-ticketing-operations-prod   (tfstate S3, ECR, Logs PROD)
+    │   ├── demo-ticketing-operations-stage  (tfstate S3 + ECR STAGE)
+    │   └── demo-ticketing-operations-prod   (tfstate S3 + ECR PROD)
     ├── OU: Auth
     │   ├── demo-ticketing-auth-stage        (Cognito + IAM STAGE)
     │   └── demo-ticketing-auth-prod         (Cognito + IAM PROD)
-    └── OU: Workloads
-        ├── demo-ticketing-stage             (Core App STAGE)
-        └── demo-ticketing-prod              (Core App PROD)
+    ├── OU: Workloads
+    │   ├── demo-ticketing-stage             (Core App STAGE)
+    │   └── demo-ticketing-prod              (Core App PROD)
+    └── OU: Monitoring
+        └── demo-ticketing-monitoring        (CloudWatch x-account, CloudTrail org, Dashboards)
 ```
 
 #### Estrategia del `.tfstate`
@@ -46,6 +49,12 @@ El estado de Terraform de **todos los ambientes** se guarda en la **cuenta Opera
 - `demo-ticketing-operations-prod`  → `s3://demo-ticketing-tfstate-prod/`
 
 Los pipelines de GitHub Actions asumen un rol OIDC en **Operations** para leer/escribir el state, sin necesidad de darles acceso directo a las cuentas de workload.
+
+#### Estrategia de Observabilidad (Log Archive Account)
+La cuenta `demo-ticketing-monitoring` actua como **Log Archive centralizado** para todas las cuentas de la organización:
+- **CloudTrail org-wide**: Todos los eventos de API de todas las cuentas se envían a un S3 en `monitoring`. Inmutable e inviolable.
+- **CloudWatch cross-account**: Cada cuenta envía sus métricas y logs a un Sink (recurso compartido) en `monitoring`. Un único dashboard muestra el estado de toda la plataforma.
+- **Separación de responsabilidades**: Un operador puede ver logs en `monitoring` sin tener acceso a las cuentas de workload (`stage`/`prod`).
 
 
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
