@@ -24,7 +24,8 @@ Para garantizar el **aislamiento de recursos**, **seguridad (Blast Radius)** y *
 | **demo-ticketing-auth-prod** | Prod | Cognito User Pool PROD, IAM Roles, Lambdas de auth triggers. |
 | **demo-ticketing-stage** | Stage | Núcleo de la aplicación STAGE: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
 | **demo-ticketing-prod** | Prod | Núcleo de la aplicación PROD: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
-| **demo-ticketing-monitoring** | Todos | Cuenta centralizada de observabilidad: CloudWatch cross-account, CloudTrail org-wide, alarmas y dashboards. |
+| **demo-ticketing-monitoring-stage** | Stage | Observabilidad STAGE: CloudWatch cross-account, CloudTrail, alarmas y dashboards de STAGE. |
+| **demo-ticketing-monitoring-prod** | Prod | Observabilidad PROD: CloudWatch cross-account, CloudTrail, alarmas y dashboards de PROD. |
 
 #### Jerarquía Visual
 ```
@@ -39,8 +40,9 @@ AWS Organizations (Root)
     ├── OU: Workloads
     │   ├── demo-ticketing-stage             (Core App STAGE)
     │   └── demo-ticketing-prod              (Core App PROD)
-    └── OU: Monitoring
-        └── demo-ticketing-monitoring        (CloudWatch x-account, CloudTrail org, Dashboards)
+    ├── OU: Monitoring
+    │   ├── demo-ticketing-monitoring-stage  (CloudWatch + CloudTrail STAGE)
+    │   └── demo-ticketing-monitoring-prod   (CloudWatch + CloudTrail PROD)
 ```
 
 #### Estrategia del `.tfstate`
@@ -50,11 +52,12 @@ El estado de Terraform de **todos los ambientes** se guarda en la **cuenta Opera
 
 Los pipelines de GitHub Actions asumen un rol OIDC en **Operations** para leer/escribir el state, sin necesidad de darles acceso directo a las cuentas de workload.
 
-#### Estrategia de Observabilidad (Log Archive Account)
-La cuenta `demo-ticketing-monitoring` actua como **Log Archive centralizado** para todas las cuentas de la organización:
-- **CloudTrail org-wide**: Todos los eventos de API de todas las cuentas se envían a un S3 en `monitoring`. Inmutable e inviolable.
-- **CloudWatch cross-account**: Cada cuenta envía sus métricas y logs a un Sink (recurso compartido) en `monitoring`. Un único dashboard muestra el estado de toda la plataforma.
-- **Separación de responsabilidades**: Un operador puede ver logs en `monitoring` sin tener acceso a las cuentas de workload (`stage`/`prod`).
+#### Estrategia de Observabilidad (Log Archive Accounts)
+Las cuentas `demo-ticketing-monitoring-stage` y `demo-ticketing-monitoring-prod` actúan como **Log Archive separados por ambiente**:
+- **CloudTrail por OU**: Los eventos de API de las cuentas STAGE van a `monitoring-stage`; los de PROD a `monitoring-prod`.
+- **CloudWatch cross-account**: Cada cuenta envía sus métricas y logs al Sink correspondiente (`monitoring-stage` o `monitoring-prod`).
+- **Aislamiento de alertas**: Las alarmas de STAGE no ruidan las de PROD. Un PagerDuty o SNS distinto prioriza los avisos de PROD.
+- **Separación de responsabilidades**: Un operador puede ver logs de su ambiente en `monitoring-*` sin acceso a las cuentas de workload.
 
 
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
