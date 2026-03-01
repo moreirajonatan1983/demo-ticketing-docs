@@ -178,3 +178,71 @@ graph LR
     class ServiceInteface,RepositoryPort inter;
     class BusinessService,JWTModel dom;
 ```
+
+---
+
+## 4. Route 53 — DNS, Dominio y Multi-Account Strategy (stage / prod)
+
+Describe cómo el dominio comprado en Route 53 se conecta con los distintos ambientes de AWS. Detalla:
+- **Route 53 Hosted Zone** como DNS autoritativo de `dominioacomprar.com`
+- **Registros DNS:**
+  - `dominioacomprar.com` → ALIAS Apex → CloudFront PROD
+  - `www.dominioacomprar.com` → CNAME → CloudFront PROD
+  - `api.dominioacomprar.com` → CNAME → API Gateway PROD
+  - `api.stage.dominioacomprar.com` → CNAME → API Gateway STAGE
+- **ACM** emitiendo certificados wildcard `*.dominioacomprar.com` y `*.stage.dominioacomprar.com` en `us-east-1`
+- **WAF** declarado independientemente en cada cuenta AWS (PROD / STAGE)
+- **Cuentas AWS PROD y STAGE** completamente aisladas entre sí
+
+### 🖼️ Diagrama AWS
+![Route 53 Multi-Account](aws_route53_dns.png)
+
+### 📐 Diagrama Mermaid
+
+```mermaid
+graph TD
+    User["Client Browser / Mobile"] -->|Request| R53["Route 53\nHosted Zone\ndominioacomprar.com"]
+
+    R53 -->|"ALIAS – dominioacomprar.com"| CF_PROD
+    R53 -->|"CNAME – www.dominioacomprar.com"| CF_PROD
+    R53 -->|"CNAME – api.dominioacomprar.com"| APIGW_PROD
+    R53 -->|"CNAME – api.stage.dominioacomprar.com"| APIGW_STAGE
+
+    subgraph "AWS Account: PROD – us-east-1"
+        ACM_PROD["ACM SSL\n*.dominioacomprar.com"]
+        CF_PROD["CloudFront PROD"]
+        WAF_PROD["WAF PROD"]
+        S3_PROD[("S3 SPA PROD")]
+        APIGW_PROD["API Gateway PROD"]
+        LAMBDA_PROD["Lambdas PROD"]
+
+        ACM_PROD -.-> CF_PROD
+        CF_PROD --> WAF_PROD --> S3_PROD
+        WAF_PROD --> APIGW_PROD --> LAMBDA_PROD
+    end
+
+    subgraph "AWS Account: STAGE – us-east-1"
+        ACM_STAGE["ACM SSL\n*.stage.dominioacomprar.com"]
+        CF_STAGE["CloudFront STAGE"]
+        WAF_STAGE["WAF STAGE"]
+        S3_STAGE[("S3 SPA STAGE")]
+        APIGW_STAGE["API Gateway STAGE"]
+        LAMBDA_STAGE["Lambdas STAGE"]
+
+        ACM_STAGE -.-> CF_STAGE
+        CF_STAGE --> WAF_STAGE --> S3_STAGE
+        WAF_STAGE --> APIGW_STAGE --> LAMBDA_STAGE
+    end
+```
+
+---
+
+## Mapa Rápido: Subdominios por Ambiente
+
+| Subdominio | Ambiente | Destino |
+|---|---|---|
+| `dominioacomprar.com` | PROD | CloudFront → S3 React SPA |
+| `www.dominioacomprar.com` | PROD | CloudFront → S3 React SPA |
+| `api.dominioacomprar.com` | PROD | API Gateway → Lambdas PROD |
+| `stage.dominioacomprar.com` | STAGE | CloudFront → S3 React SPA STAGE |
+| `api.stage.dominioacomprar.com` | STAGE | API Gateway → Lambdas STAGE |
