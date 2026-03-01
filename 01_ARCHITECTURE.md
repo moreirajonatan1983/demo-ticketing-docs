@@ -5,23 +5,49 @@ Se trata de una plataforma orientada a la venta masiva de entradas para eventos 
 
 ## 1. Objetivos del Proyecto
 *   **Resolver alta concurrencia**: Ventas concurrentes de entradas (`DynamoDB` + bloqueos optimistas o colas `SQS` / `EventBridge`).
-*   **Procesamiento Asíncrono y Batch**: Generación de reportes masivos de ventas, PDFs de entradas y envío de e-mails usando trabajadores (workers) en Kubernetes.
-*   **Experiencia en Tiempo Real**: Notificaciones Push (Push Notifications) a los clientes sobre sus eventos, cambios de horario o estado de sus entradas.
+*   **Procesamiento Asíncrono y Batch**: Generación de reportes masivos de ventas, PDFs de entradas y envío de e-mails usando workers en **AWS ECS Fargate** (Java/Spring Boot).
+*   **Experiencia en Tiempo Real**: Notificaciones Push a los clientes sobre sus eventos, cambios de horario o estado de sus entradas.
 *   **Observabilidad completa**: Trazabilidad distribuida con `AWS X-Ray` en todos los flujos de la API y monitoreo detallado con métricas y alarmas en `Amazon CloudWatch`.
-*   **Cumplimiento de Patrones Avanzados**:
-    *   **CQRS (Command-Query Responsibility Segregation)**: Separación estricta de las operaciones de lectura (Query) y escritura (Command). 
-    *   **Pub/Sub**: Desacople de procesos secundarios (e.g. notificaciones push/email) del flujo principal de compra.
-    *   **Saga (Orquestada)**: Coordinación de transacciones distribuidas en la compra de la entrada (Reservar Asiento -> Pagar -> Emitir Entrada).
-    *   **Circuit Breaker**: Resiliencia frente a fallos temporales en servicios externos (ej. pasarelas de pago).
+*   **Cumplimiento de Patrones Avanzados**: CQRS, Pub/Sub, Saga Orquestada (Step Functions), Circuit Breaker.
 
 ## 2. Componentes de la Arquitectura
 
 ### 2.0 Topología de Cuentas (AWS Organizations)
-Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la gestión centralizada de facturación (consolidada bajo el **Free Tier**), la infraestructura se despliega bajo una organización Multi-Account regida por el servicio **AWS Organizations**.
-*   **CollieTech Management (`658947469588`)**: Cuenta administrativa de gobernanza. Se utiliza exclusivamente para orquestar la creación del resto de sub-cuentas y administrar Service Control Policies (SCPs). No aloja cargas de trabajo.
-*   **demo-ticketing-auth-backend**: Cuenta esclava dedicada de forma aislada a los recursos de identidad (Cognito, IAM Roles) y a los lambdas de triggers o pre/post sign-up de autenticación.
-*   **demo-ticketing-backend**: Cuenta dedicada a alojar el núcleo de la aplicación, bases de datos DynamoDB, el Bus de Eventos y el poder de cómputo Serverless.
-### 2.1 Front-End / Consolas
+Para garantizar el **aislamiento de recursos**, **seguridad (Blast Radius)** y **facturación consolidada** bajo el Free Tier, la infraestructura se despliega bajo una organización Multi-Account regida por **AWS Organizations**.
+
+| Cuenta | Ambiente | Propósito |
+|---|---|---|
+| **demo-ticketing-management** | - | Cuenta Raíz / Gobernanza. Orquesta sub-cuentas y SCPs. No aloja workloads. |
+| **demo-ticketing-operations-stage** | Stage | Cuenta de servicios compartidos de STAGE: S3 para `.tfstate`, ECR para imágenes Docker, logs centralizados CloudWatch. |
+| **demo-ticketing-operations-prod** | Prod | Cuenta de servicios compartidos de PROD: S3 para `.tfstate`, ECR para imágenes Docker, logs centralizados CloudWatch. |
+| **demo-ticketing-auth-stage** | Stage | Cognito User Pool STAGE, IAM Roles, Lambdas de auth triggers. JWTs de Stage aislados de Prod. |
+| **demo-ticketing-auth-prod** | Prod | Cognito User Pool PROD, IAM Roles, Lambdas de auth triggers. |
+| **demo-ticketing-stage** | Stage | Núcleo de la aplicación STAGE: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
+| **demo-ticketing-prod** | Prod | Núcleo de la aplicación PROD: API Gateway, DynamoDB, Lambdas Core, Step Functions, ECS Fargate Workers. |
+
+#### Jerarquía Visual
+```
+AWS Organizations (Root)
+└── demo-ticketing-management  (Governance)
+    ├── OU: Operations
+    │   ├── demo-ticketing-operations-stage  (tfstate S3, ECR, Logs STAGE)
+    │   └── demo-ticketing-operations-prod   (tfstate S3, ECR, Logs PROD)
+    ├── OU: Auth
+    │   ├── demo-ticketing-auth-stage        (Cognito + IAM STAGE)
+    │   └── demo-ticketing-auth-prod         (Cognito + IAM PROD)
+    └── OU: Workloads
+        ├── demo-ticketing-stage             (Core App STAGE)
+        └── demo-ticketing-prod              (Core App PROD)
+```
+
+#### Estrategia del `.tfstate`
+El estado de Terraform de **todos los ambientes** se guarda en la **cuenta Operations** correspondiente:
+- `demo-ticketing-operations-stage` → `s3://demo-ticketing-tfstate-stage/`
+- `demo-ticketing-operations-prod`  → `s3://demo-ticketing-tfstate-prod/`
+
+Los pipelines de GitHub Actions asumen un rol OIDC en **Operations** para leer/escribir el state, sin necesidad de darles acceso directo a las cuentas de workload.
+
+
 *   Una Single Page Application (SPA), en React/Next.js, alojada en un S3 y distribuida vía CDN (CloudFront) y aplicaciones móviles (iOS/Android) que consumen la misma API.
 
 ### 2.2 Seguridad, Autenticación y Autorización (Repositorio: `demo-ticketing-auth-backend`)
@@ -35,7 +61,7 @@ Para garantizar el aislamiento de recursos, la seguridad (Blast Radius) y la ges
 *   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume un BFF optimizado para redes móviles con payloads más reducidos.
 
 ### 2.4 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-backend`)
-*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en Kubernetes (Minikube) estarán desarrollados en **Java 21**, aprovechando el enorme potencial multi-threading y el ecosistema robusto de la JVM para reportes masivos.*
+*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en Kubernetes (Minikube) estarán desarrollados en **Java 21**. Para más detalles sobre esta decisión, ver [ADR 001: Separación de Backend](./ADR_001_BACKEND_SEPARATION.md).*
 
 #### A. Sala de Espera Virtual (Virtual Waiting Room)
 Componente periférico que intercepta el tráfico de una entrada antes de que alcance las APIs transaccionales. Emplea un sistema en memoria (ej: Amazon ElastiCache / Redis) para ordenar a los usuarios y asignarles una posición en la fila frente a picos de demanda, permitiéndoles entrar de forma racionada y controlada al checkout (Mitigación total de Flash Crowds).
