@@ -1,32 +1,43 @@
-# Ticketera Cloud (Demo Project Docs)
+# Ticketera Cloud
 
-> **Proyecto Práctico de Arquitectura y Desarrollo Nube**
+> **Plataforma de Venta Masiva de Entradas**
 
-## 1. Visión del Proyecto
-**Ticketera Cloud** resuelve el clásico problema de sistemas de venta masiva de entradas concurrentes (Flash Crowds / Sold-outs en segundos).
-Se trata de una solución basada en microservicios, eventos asíncronos y procesamiento distribuido usando un mix entre **AWS Serverless** (Lambda, Step Functions, EventBridge) y contenedores administrados con **Kubernetes** para cargas batch pesadas.
+## 1. Visión del Producto y Negocio
+**Ticketera Cloud** es una solución diseñada para gestionar la venta masiva de entradas a eventos de muy alta demanda. Su objetivo principal es garantizar una experiencia de compra fluida y transparente para los fans, incluso durante picos extremos de tráfico mundial (flash crowds y sold-outs en segundos).
 
-Se aplican explícitamente conceptos de observabilidad (métricas y alarmas en CloudWatch + Trazabilidad en X-Ray) así como patrones consolidados del mercado (Pub/Sub, Saga y Circuit Breaker).
+### Propuesta de Valor
+- **Experiencia de Usuario (UX) sin fricciones**: Interfaz intuitiva, ágil y atractiva para que los usuarios aseguren sus entradas en pocos pasos y sin demoras.
+- **Confiabilidad ante alta demanda**: La plataforma mantiene su estabilidad cuando miles de usuarios entran a comprar al mismo tiempo. Se implementan filas virtuales justas y reserva de tickets temporal.
+- **Gestión Integral para Promotores (B2B)**: Un panel de control (Backoffice) completo para crear eventos, configurar zonas y capacidades, además de analizar métricas de ventas en tiempo real.
+- **Acceso Omnicanal**: Disponibilidad equitativa a través de plataforma web y aplicación móvil nativa.
 
-## 2. Mapa de Repositorios
+## 2. Visión Técnica y Arquitectura
+Para lograr cumplir con las demandas del negocio sin comprometer la estabilidad, la plataforma se apoya bajo el capó en una arquitectura de microservicios elástica. Utiliza un ecosistema híbrido entre **AWS Serverless** (Lambda, Step Functions, EventBridge) para transacciones ultra-rápidas, y contenedores administrados (como **Kubernetes**) para cargas más pesadas o procesos batch.
 
-- **[demo-ticketing-docs](./)**: Repositorio actual. Contiene las definiciones estratégicas de arquitectura ([`01_ARCHITECTURE.md`](./01_ARCHITECTURE.md)), flujogramas de procesos, diagramas y decisiones.
-- **`demo-ticketing-auth-backend`**: Autenticación, Roles, Pool de Usuarios (Compradores y Admins), Seguridad IAM, WAF y pasarela principal de identidades (Cognito).
-- **`demo-ticketing-backend`**: Núcleo de la plataforma. Microservicios Serverless para API en **Go / Node.js** (Catálogo, Checkout SAGA) y Workers en **Java 21 (Spring / JVM)** desplegados en Kubernetes para envíos masivos y Reportes.
-- **`demo-ticketing-web`**: SPA Web construida en **React + TypeScript + Vanilla CSS**, optimizada con Glassmorphism para la UX de compras de clientes finales.
-- **`demo-ticketing-android`**: App móvil nativa B2C en **Kotlin/Jetpack Compose**, consumiendo el Backend y Cognito para la compra y visualización de tickets en celular.
+Se aplican patrones de diseño distribuidos como *Saga* (para asegurar compras exactas sin problemas de consistencia) y *Circuit Breaker*. Todo esto rodeado de una fuerte estrategia de observabilidad y telemetría.
 
-## 3. Arquitectura y Tecnologías
-Para navegar los patrones y arquitectura de este proyecto, referirse al documento [**Arquitectura Core / Diagramas Visuales**](./01_ARCHITECTURE.md).
+Para detalles profundos y flujogramas, referirse al documento [**Arquitectura Core / Diagramas Visuales**](./01_ARCHITECTURE.md).
 
-## 4. Gestión del Proyecto, Finanzas y Metodología
-- [**Análisis de Costos (AWS Free Tier) y Cronograma Semanal (Estimación)**](./02_COST_AND_TIME_ESTIMATION.md)
-- [**Metodología de Planificación (Enfoque Ágil y Teardown)**](./03_PLANNING_METHODOLOGY.md)
-- [**Diccionario y Glosario Técnico (Términos Arquitectónicos)**](./04_TECHNICAL_GLOSSARY.md)
-- [**Estrategia Exhaustiva de Pruebas (Unitarias, Regresión y Alta Concurrencia/Stress)**](./05_TESTING_STRATEGY.md)
-- [**Esquemas de Datos en Base de Datos NoSQL (DynamoDB)**](./07_DATA_SCHEMAS.md)
+## 3. Mapa de Repositorios
+
+El proyecto está organizado en los siguientes grandes módulos:
+
+- **[demo-ticketing-docs](./)**: Este repositorio. Contiene la visión B2B/B2C, planes de proyecto, diseños de interfaz (UI/UX) y decisiones de arquitectura.
+- **`demo-ticketing-auth-backend`**: Gestión de Identidad y Seguridad. Autenticación, roles y reglas de acceso unificadas usando AWS Cognito.
+- **`demo-ticketing-services-backend`**: El motor del negocio. Microservicios transaccionales en **Go / Node.js** (Catálogo de eventos, Checkout de compras) y Workers en **Java 21 (Spring / JVM)** para envíos masivos de tickets y reportes financieros.
+- **`demo-ticketing-web`**: Solución web para clientes y promotores. SPA construida en **React + TypeScript**, enfocada en ofrecer una estética premium (Glassmorphism) y alta velocidad.
+
+## 4. Documentación y Gestión de Proyecto
+
+Explora los siguientes documentos funcionales y técnicos para sumergirte en el proyecto:
+
 - [**Diseño de Pantallas, UI/UX y Wireflows Front-End**](./ui_design/UI_UX_DESIGN.md)
 - [**Experiencia de Onboarding B2C y Plataforma Backoffice B2B**](./ui_design/ONBOARDING_AND_BACKOFFICE.md)
+- [**Diccionario y Glosario (Funcional y Técnico)**](./04_TECHNICAL_GLOSSARY.md)
+- [**Estrategia Exhaustiva de Pruebas**](./05_TESTING_STRATEGY.md)
+- [**Metodología de Planificación (Enfoque Ágil)**](./03_PLANNING_METHODOLOGY.md)
+- [**Análisis de Costos (AWS) y Cronograma Semanal**](./02_COST_AND_TIME_ESTIMATION.md)
+- [**Esquemas de Datos en Base de Datos NoSQL (DynamoDB)**](./07_DATA_SCHEMAS.md)
 
 ## 5. Implementación MVP Finalizada ✅
 A lo largo de múltiples iteraciones, el MVP demostrativo de este proyecto completó con éxito el **100% de las historias de usuario planificadas**:
@@ -68,4 +79,3 @@ Si necesitas continuar el desarrollo de este proyecto en una nueva Mac utilizand
 > 
 > Por favor, infórmame paso a paso lo que vas instalando y si te encuentras con algún problema de permisos o dependencias."
 ---
-
