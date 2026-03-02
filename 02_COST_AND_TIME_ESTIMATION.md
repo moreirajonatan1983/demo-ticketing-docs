@@ -32,12 +32,12 @@ A efectos de esta estimación base, se calcula un volumen de impacto moderado-al
 ---
 
 ## 1.1 Comparativa de Costos: Serverless vs Arquitectura Clásica Tradicional
-A nivel estratégico, la Ticketera opta por Serverless frente a una arquitectura monolítica (o basada 100% en contenedores permanentes, como AWS ECS Fargate) debido a los abismales ahorros en "Idle Time" (Tiempo Inactivo).
+A nivel estratégico, la Ticketera opta por Serverless frente a una arquitectura basada 100% en contenedores con nodos permanentes (como Amazon EKS con EC2 o ECS con EC2 Launch Type) debido a los abismales ahorros en "Idle Time" (Tiempo Inactivo). Cabe destacar que nuestros Workers en **AWS ECS (Fargate)** también son pay-per-use, por lo que tampoco generan costo en inactividad.
 
 | Tipo de Arquitectura | Costo Inactivo (Noche/Madrugada) | Respuesta a Flash Crowds | Costo Base Mensual Mínimo |
 | :--- | :--- | :--- | :--- |
-| **Arquitectura Serverless (La nuestra)** | **$0.00** (Las Lambdas/API no cobran si no hay tráfico) | Escala en milisegundos hasta miles de instancias concurrentes | **~$9.50** (Solo el WAF fijo) |
-| **Arquitectura No-Serverless (AWS ECS Fargate / Nodos EC2)** | Sigue facturando 100% de los Nodos EC2 ($$$) | Requiere pre-saturar Nodos (Auto-Scaling lento, demora minutos) | **~$150+** ($73 Control Plane + Nodos Fijos/Load Balancers) |
+| **Arquitectura Serverless (La nuestra: Lambda + ECS Fargate)** | **$0.00** (Las Lambdas y las Tasks Fargate no cobran si no hay tráfico) | Escala en milisegundos hasta miles de instancias concurrentes | **~$9.50** (Solo el WAF fijo) |
+| **Arquitectura No-Serverless (EKS con EC2 / ECS con EC2 Launch Type)** | Sigue facturando 100% de los Nodos EC2 ($$$) aunque no haya visitas | Requiere pre-saturar Nodos (Auto-Scaling lento, tarda minutos) | **~$150+** ($73 EKS Control Plane + Nodos EC2 Fijos + Load Balancers) |
 
 *Conclusión*: Para el caso de uso del proyecto (donde el 90% de las ventas masivas suceden en una ventana de 2 horas al anunciar el evento), **Serverless previene malgastar presupuesto pagando instancias y clústeres inactivos** el resto de la semana.
 
