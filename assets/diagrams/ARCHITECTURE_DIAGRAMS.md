@@ -253,10 +253,11 @@ graph TD
 
 Diagrama completo de la estructura de cuentas AWS. Detalla:
 - **Cuenta `management`** como raíz de gobernanza y SCPs
-- **OU Operations** (`operations-stage` / `operations-prod`): S3 tfstate + ECR imágenes Docker
-- **OU Auth** (`auth-stage` / `auth-prod`): Cognito, IAM Roles, Auth Lambdas aisladas por ambiente
-- **OU Workloads** (`stage` / `prod`): API Gateway, DynamoDB, Step Functions, ECS Fargate
-- **OU Monitoring** (`monitoring-stage` / `monitoring-prod`): CloudWatch cross-account, CloudTrail + SNS alertas
+- **OU `demo-ticketing`**: Única unidad que contiene todas las cuentas del proyecto
+- **Operations** (`operations-stage` / `operations-prod`): S3 tfstate + ECR imágenes Docker
+- **Auth** (`auth-stage` / `auth-prod`): Cognito, IAM Roles, Auth Lambdas aisladas por ambiente
+- **Workloads** (`stage` / `prod`): API Gateway, DynamoDB, Step Functions, ECS Fargate
+- **Monitoring** (`monitoring-stage` / `monitoring-prod`): CloudWatch cross-account, CloudTrail + SNS alertas
 - Flujo de `tfstate` via GitHub Actions OIDC → Operations
 - Flujo de logs/métricas cross-account → Monitoring
 
@@ -269,22 +270,16 @@ Diagrama completo de la estructura de cuentas AWS. Detalla:
 graph TD
     ROOT["demo-ticketing-management\n(Governance / Root)"]
 
-    subgraph "OU: Operations"
+    subgraph "OU: demo-ticketing"
         OPS_S["demo-ticketing-operations-stage\ntfstate S3 + ECR"]
         OPS_P["demo-ticketing-operations-prod\ntfstate S3 + ECR"]
-    end
 
-    subgraph "OU: Auth"
         AUTH_S["demo-ticketing-auth-stage\nCognito + IAM + Lambdas"]
         AUTH_P["demo-ticketing-auth-prod\nCognito + IAM + Lambdas"]
-    end
 
-    subgraph "OU: Workloads"
         WL_S["demo-ticketing-stage\nAPI GW + DynamoDB + Fargate"]
         WL_P["demo-ticketing-prod\nAPI GW + DynamoDB + Fargate"]
-    end
 
-    subgraph "OU: Monitoring"
         MON_S["demo-ticketing-monitoring-stage\nCloudWatch + CloudTrail + SNS"]
         MON_P["demo-ticketing-monitoring-prod\nCloudWatch + CloudTrail + SNS"]
     end
@@ -310,11 +305,11 @@ graph TD
 | Cuenta | OU | Ambiente | Propósito |
 |---|---|---|---|
 | `demo-ticketing-management` | Root | - | Gobernanza, SCPs, creación de cuentas |
-| `demo-ticketing-operations-stage` | Operations | Stage | tfstate S3, ECR imágenes Docker |
-| `demo-ticketing-operations-prod` | Operations | Prod | tfstate S3, ECR imágenes Docker |
-| `demo-ticketing-auth-stage` | Auth | Stage | Cognito, IAM, Auth Lambdas |
-| `demo-ticketing-auth-prod` | Auth | Prod | Cognito, IAM, Auth Lambdas |
-| `demo-ticketing-stage` | Workloads | Stage | API GW, DynamoDB, Step Functions, Fargate |
-| `demo-ticketing-prod` | Workloads | Prod | API GW, DynamoDB, Step Functions, Fargate |
-| `demo-ticketing-monitoring-stage` | Monitoring | Stage | CloudWatch, CloudTrail, SNS alertas |
-| `demo-ticketing-monitoring-prod` | Monitoring | Prod | CloudWatch, CloudTrail, SNS alertas |
+| `demo-ticketing-operations-stage` | demo-ticketing | Stage | tfstate S3, ECR imágenes Docker |
+| `demo-ticketing-operations-prod` | demo-ticketing | Prod | tfstate S3, ECR imágenes Docker |
+| `demo-ticketing-auth-stage` | demo-ticketing | Stage | Cognito, IAM, Auth Lambdas |
+| `demo-ticketing-auth-prod` | demo-ticketing | Prod | Cognito, IAM, Auth Lambdas |
+| `demo-ticketing-stage` | demo-ticketing | Stage | API GW, DynamoDB, Step Functions, Fargate |
+| `demo-ticketing-prod` | demo-ticketing | Prod | API GW, DynamoDB, Step Functions, Fargate |
+| `demo-ticketing-monitoring-stage` | demo-ticketing | Stage | CloudWatch, CloudTrail, SNS alertas |
+| `demo-ticketing-monitoring-prod` | demo-ticketing | Prod | CloudWatch, CloudTrail, SNS alertas |

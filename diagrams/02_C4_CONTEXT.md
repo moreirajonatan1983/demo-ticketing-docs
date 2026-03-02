@@ -22,7 +22,47 @@ C4Context
     Rel(admin, ticketera, "Extrae reportes financieros batchs generados por el worker en Minikube", "HTTPS")
     Rel(admin, cognito_auth, "Ingresa al pool de administradores", "HTTPS / SAML")
     
-    Rel(ticketera, gateway_pago, "Deduce fondos monetarios y valida cobro", "Rest API secured")
+Rel(ticketera, gateway_pago, "Deduce fondos monetarios y valida cobro", "Rest API secured")
     Rel(ticketera, notificaciones, "Dispara avisos a los teléfonos moviles y reenvía correos de confirmación")
     Rel(ticketera, cognito_auth, "Valida el JWT firmado de cada API Request de los usuarios entrantes al Gateway")
 ```
+
+## Nivel 2: Diagrama de Contenedores
+
+Este diagrama detalla los servicios internos que conforman el sistema "Ticketera Cloud".
+
+```mermaid
+architecture-beta
+    group frontend(cloud)[Frontend & Clients]
+    group aws_core(cloud)[AWS Serverless Core - Backend]
+    group k8s_cl(cloud)[Kubernetes Cluster - Offload]
+    group storage(cloud)[Data Storage]
+
+    service webapp(internet)[React Web/Mobile] in frontend
+    service api(api-gateway)[API Gateway] in aws_core
+    service saga(step-functions)[Saga Orquestrator] in aws_core
+    service fn_tickets(lambda)[tickets-lambda] in aws_core
+    service fn_seats(lambda)[seats-lambda] in aws_core
+    
+    service wr(eks)[waiting-room-java] in k8s_cl
+    service worker(eks)[ticket-worker-java] in k8s_cl
+
+    service db(dynamodb)[DynamoDB] in storage
+    service cache(elasticache)[Redis] in storage
+    service bucket(s3)[S3 Buckets] in storage
+
+    webapp:B --> T:api
+    webapp:B --> T:wr
+    
+    api:R --> L:saga
+    saga:B --> T:fn_tickets
+    saga:B --> T:fn_seats
+    
+    fn_tickets:B --> T:db
+    fn_seats:B --> T:db
+    
+    wr:R --> L:cache
+    
+    worker:R --> L:bucket
+```
+

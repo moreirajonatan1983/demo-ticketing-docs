@@ -8,29 +8,27 @@ La topología de seguridad se encuentra gobernada por **Amazon Cognito** (dentro
 3.  **Refresh_Token**: Un token ofuscado que emite nuevos Access Tokens a las 24hs automáticamente, manteniendo al usuario logueado en su teléfono pero bloqueándolo si el admin decide cerrarle la cuenta en el backend.
 
 ```mermaid
-sequenceDiagram
-    participant WebApp as Client Web SPA
-    participant Cognito as Amazon Cognito (Auth Account)
-    participant APIGW as API Gateway (Core Account)
-    participant Lambda as Lambda Function
+architecture-beta
+    group clients(cloud)[Clients]
+    group auth(cloud)[Identity Provider]
+    group backend(cloud)[Backend System]
 
-    %% Proceso de Autenticacion/Login FrontEnd %%
-    Note over WebApp,Cognito: Flujo SRP (Secure Remote Password) de Cognito
-    WebApp->>Cognito: POST /login (username, auth hash password)
-    Cognito-->>WebApp: Retorna Tokens JWT (IdToken, AccessToken, RefreshToken)
+    service web(internet)[Client SPA] in clients
+    service app(mobile)[Mobile App] in clients
+    
+    service cognito(cognito)[Amazon Cognito] in auth
+    
+    service apigw(api-gateway)[API Gateway] in backend
+    service lambdas(lambda)[Go Lambdas] in backend
+    service dynamodb(dynamodb)[DynamoDB] in backend
 
-    %% Interacción protegida en el backend %%
-    Note over WebApp,Lambda: Usuario solicita información privada transaccional
-    WebApp->>APIGW: GET /api/v1/user/orders (Header: Authorization Bearer [AccessToken])
+    web:R --> L:cognito
+    app:R --> L:cognito
     
-    APIGW->>APIGW: 1. Valida algorítmo local de la firma (RS256) contra la JWKS OIDC.
-    APIGW->>APIGW: 2. Determina si el JWT expiró.
+    web:B --> T:apigw
+    app:B --> T:apigw
     
-    alt Token Inválido o Expirado
-        APIGW-->>WebApp: 401 Unauthorized (Sin despertar a Lambda - Ahorro de Costos)
-    else JWT Totalmente Valido
-        APIGW->>Lambda: Forward Request inyectando los claims del usuario desde el JWT (ej: `sub` / UUID del usuario)
-        Lambda-->>APIGW: Responde datos privados (Histórico de Tickets DB)
-        APIGW-->>WebApp: 200 OK
-    end
+    apigw:R --> L:cognito
+    apigw:R --> L:lambdas
+    lambdas:R --> L:dynamodb
 ```

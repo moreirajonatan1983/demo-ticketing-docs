@@ -6,11 +6,12 @@ Este documento detalla los pasos exactos y las herramientas requeridas para que 
 
 Deberás tener instalado en tu estación de trabajo (macOS, Linux o Windows WSL2) lo siguiente:
 
-1.  **Docker Desktop / OrbStack**: Motor de contenedores (Requisito indispensable para SAM y Minikube).
-2.  **AWS CLI**: Configurado con un perfil local, aunque apunte a credenciales temporales o dummy para pruebas de Mock.
-3.  **AWS SAM CLI**: La herramienta oficial para emular y compilar `AWS Lambda` localmente, y levantar APIs enteras de forma local con Docker.
-4.  **Minikube & `kubectl`**: El simulador de clúster Kubernetes local para levantar el Worker de reportes/compresión.
-5.  **Golang 1.21+, Node.js 20+ y Java 21**: Go y Node.js se utilizarán para compilar los microservicios Serverless (`demo-ticketing-backend`), mientras que Java 21 es mandatorio para compilar y empaquetar en Docker los Workers de Kubernetes.
+1.  **Docker Desktop / OrbStack**: Motor de contenedores (Requisito indispensable).
+2.  **AWS CLI / AWS CLI Local (`awslocal`)**: Herramientas para interactuar con AWS y LocalStack.
+3.  **AWS SAM CLI**: Para emular `AWS Lambda` localmente.
+4.  **LocalStack**: Emulación de SQS, S3, DynamoDB y Step Functions localmente.
+5.  **Minikube & `kubectl` / `helm`**: Cluster local para los servicios Java y KEDA.
+6.  **Golang 1.21+, Node.js 20+, Java 21 y Maven**: Lenguajes y gestores de dependencias necesarios.
 
 ---
 
@@ -18,20 +19,20 @@ Deberás tener instalado en tu estación de trabajo (macOS, Linux o Windows WSL2
 
 El repositorio `demo-ticketing-backend` aloja la arquitectura AWS. Se utiliza **SAM Local** para levantar la API transaccional en el puerto `3000`.
 
-1.  Clonar el repositorio y entrar: `cd demo-ticketing-backend`.
-2.  Ejecutar el build del motor SAM:
+1.  **Iniciar LocalStack**:
     ```bash
-    sam build
+    docker run -d -p 4566:4566 -p 4510-4559:4510-4559 localstack/localstack
     ```
-3.  *Opcional*: Si tu código de Lambda apunta a base de datos, levanta un contenedor de DynamoDB Local en paralelo:
+2.  **Configurar Infraestructura y SAGA**:
+    Ejecutar el script que crea colas SQS, buckets S3, tablas DynamoDB y la **State Machine** de Step Functions:
     ```bash
-    docker run -p 8000:8000 amazon/dynamodb-local
+    cd demo-ticketing-backend
+    ./scripts/setup_saga.sh
     ```
-4.  Levantar el API Gateway localmente (Conectado caliente al código):
+3.  **Levantar Lambdas con SAM**:
     ```bash
-    sam local start-api --port 3000 --debug
+    sam build && sam local start-api --port 3000
     ```
-5.  ¡Listo! Puedes hacer peticiones REST locales contra `http://localhost:3000` y SAM creará contenedores efímeros de Docker para emular la Lambda exactamente igual a AWS.
 
 ---
 
@@ -39,24 +40,41 @@ El repositorio `demo-ticketing-backend` aloja la arquitectura AWS. Se utiliza **
 
 El proceso pesado (e.g. compilar mil PDFs de entradas tras un Sold-Out) no corre en Lambda. Corre en nuestro clúster local para probar el patrón de consumidor SQS/KEDA.
 
-1.  Iniciar el clúster local limpio (consume aprox. 2GB de RAM local):
+1.  **Iniciar Minikube**:
     ```bash
     minikube start --driver=docker
     ```
-2.  (Opcional) Instalar KEDA (Kubernetes Event-driven Autoscaling) de forma local usando Helm si deseamos probar auto-escalado agresivo leyendo del SQS real de AWS:
+2.  **Habilitar Ingress y KEDA**:
     ```bash
+    minikube addons enable ingress
     helm repo add kedacore https://kedacore.github.io/charts
     helm install keda kedacore/keda --namespace keda --create-namespace
     ```
-3.  Aplicar el Deployment y ConfigMap del Worker de Tickets localizado en la carpeta `/k8s` del Core:
+3.  **Compilar y Desplegar Servicios Java**:
+    Para cada servicio (`waiting-room-service`, `ticket-worker`, `notification-service`):
     ```bash
-    kubectl apply -f k8s/worker-deployment.yaml
+    cd demo-ticketing-services-backend/services/[service-name]
+    mvn clean package -DskipTests
+    # Construir imagen en el daemon de minikube
+    eval $(minikube docker-env)
+    docker build -t [service-name]:latest .
+    # Aplicar manifiestos
+    kubectl apply -f k8s/
     ```
-4.  Revisar que el Pod del trabajador levantó exitosamente buscando mensajes en SQS:
+4.  **Verificar Autoscale (KEDA)**:
     ```bash
-    kubectl get pods
-    kubectl logs -f -l app=ticket-worker
+    kubectl get pods -n ticketera
+    kubectl logs -f -l app=ticket-worker -n ticketera
     ```
+
+### 3.1. Monitoreo del Clúster (Prometheus / Grafana)
+Todas las aplicaciones Java inyectan sus métricas a través de sus endpoints `/actuator/prometheus`.
+Para visualizar la telemetría métrica en tiempo real y el estado de los workers, debes invocar el stack the Prometheus desde tu cluster Minikube:
+1.  **Ejecutar el Port-Forward al servidor de Dashboards (Grafana)**:
+    ```bash
+    kubectl port-forward svc/prometheus-grafana 3001:80 -n monitoring
+    ```
+    Y accede al navegador apuntando a `http://localhost:3001` (User: `admin`). La base de datos de telemetría inyectada se actualiza cada 5s.
 
 ---
 

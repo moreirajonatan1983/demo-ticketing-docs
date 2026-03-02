@@ -31,18 +31,15 @@ Para garantizar el **aislamiento de recursos**, **seguridad (Blast Radius)** y *
 ```
 AWS Organizations (Root)
 └── demo-ticketing-management          (Governance / Raíz)
-    ├── OU: Operations
-    │   ├── demo-ticketing-operations-stage  (tfstate S3 + ECR STAGE)
-    │   └── demo-ticketing-operations-prod   (tfstate S3 + ECR PROD)
-    ├── OU: Auth
-    │   ├── demo-ticketing-auth-stage        (Cognito + IAM STAGE)
-    │   └── demo-ticketing-auth-prod         (Cognito + IAM PROD)
-    ├── OU: Workloads
-    │   ├── demo-ticketing-stage             (Core App STAGE)
-    │   └── demo-ticketing-prod              (Core App PROD)
-    ├── OU: Monitoring
-    │   ├── demo-ticketing-monitoring-stage  (CloudWatch + CloudTrail STAGE)
-    │   └── demo-ticketing-monitoring-prod   (CloudWatch + CloudTrail PROD)
+    └── OU: demo-ticketing
+        ├── demo-ticketing-operations-stage  (tfstate S3 + ECR STAGE)
+        ├── demo-ticketing-operations-prod   (tfstate S3 + ECR PROD)
+        ├── demo-ticketing-auth-stage        (Cognito + IAM STAGE)
+        ├── demo-ticketing-auth-prod         (Cognito + IAM PROD)
+        ├── demo-ticketing-stage             (Core App STAGE)
+        ├── demo-ticketing-prod              (Core App PROD)
+        ├── demo-ticketing-monitoring-stage  (CloudWatch + CloudTrail STAGE)
+        └── demo-ticketing-monitoring-prod   (CloudWatch + CloudTrail PROD)
 ```
 
 #### Estrategia del `.tfstate`

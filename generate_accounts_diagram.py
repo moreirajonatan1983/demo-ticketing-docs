@@ -1,91 +1,87 @@
 from diagrams import Diagram, Cluster, Edge
-from diagrams.aws.management import Organizations, Cloudwatch, Cloudtrail
-from diagrams.aws.integration import SNS
-from diagrams.aws.network import Route53
+from diagrams.aws.management import Organizations, Cloudtrail, OrganizationsAccount
 from diagrams.aws.security import Cognito, IAM
 from diagrams.aws.compute import Lambda, Fargate
-from diagrams.aws.database import DynamodbTable
-from diagrams.aws.storage import S3
-from diagrams.aws.devtools import Codecommit  # ECR
 from diagrams.aws.network import APIGateway
-from diagrams.aws.integration import StepFunctions, Eventbridge
+from diagrams.aws.database import Dynamodb
+from diagrams.aws.integration import StepFunctions
+from diagrams.aws.management import Cloudwatch
+from diagrams.aws.integration import SNS
+from diagrams.aws.storage import S3
 
-with Diagram(
-    "AWS Organizations — Multi-Account Topology (9 cuentas)",
-    show=False,
-    filename="assets/diagrams/aws_multi_account_topology",
-    direction="TB",
-    graph_attr={"fontsize": "14", "pad": "0.5"}
-):
+with Diagram("AWS Organizations — Topología Multi-Account (9 cuentas)", show=False, filename="assets/diagrams/aws_multi_account_topology", direction="TB"):
+    
     root = Organizations("demo-ticketing\n-management\n(Governance / Root)")
 
-    with Cluster("OU: Operations"):
-        ops_stage = S3("demo-ticketing\n-operations-stage\ntfstate S3 + ECR")
-        ops_prod  = S3("demo-ticketing\n-operations-prod\ntfstate S3 + ECR")
+    with Cluster("OU: demo-ticketing"):
+        with Cluster("Operations"):
+            ops_stage = S3("demo-ticketing\n-operations-stage\ntfstate S3 + ECR")
+            ops_prod = S3("demo-ticketing\n-operations-prod\ntfstate S3 + ECR")
 
-    with Cluster("OU: Auth"):
-        with Cluster("Stage"):
-            auth_stage_cog = Cognito("Cognito\nUser Pool STAGE")
-            auth_stage_iam = IAM("IAM Roles\nSTAGE")
-            auth_stage_lmb = Lambda("Auth Lambdas\nSTAGE")
-        with Cluster("Prod"):
-            auth_prod_cog  = Cognito("Cognito\nUser Pool PROD")
-            auth_prod_iam  = IAM("IAM Roles\nPROD")
-            auth_prod_lmb  = Lambda("Auth Lambdas\nPROD")
+        with Cluster("Auth"):
+            with Cluster("Stage"):
+                auth_s_cog = Cognito("Cognito\nUser Pool STAGE")
+                auth_s_iam = IAM("IAM Roles\nSTAGE")
+                auth_s_lam = Lambda("Auth Lambdas\nSTAGE")
 
-    with Cluster("OU: Workloads"):
-        with Cluster("demo-ticketing-stage"):
-            apigw_stage = APIGateway("API Gateway\nSTAGE")
-            dynamo_stage = DynamodbTable("DynamoDB\nSTAGE")
-            fargate_stage = Fargate("ECS Fargate\nWorkers STAGE")
-            sf_stage     = StepFunctions("Step Functions\nSTAGE")
-        with Cluster("demo-ticketing-prod"):
-            apigw_prod  = APIGateway("API Gateway\nPROD")
-            dynamo_prod  = DynamodbTable("DynamoDB\nPROD")
-            fargate_prod = Fargate("ECS Fargate\nWorkers PROD")
-            sf_prod      = StepFunctions("Step Functions\nPROD")
+            with Cluster("Prod"):
+                auth_p_cog = Cognito("Cognito\nUser Pool PROD")
+                auth_p_iam = IAM("IAM Roles\ PROD")
+                auth_p_lam = Lambda("Auth Lambdas\nPROD")
 
-    with Cluster("OU: Monitoring"):
-        with Cluster("demo-ticketing-monitoring-stage"):
-            cw_stage     = Cloudwatch("CloudWatch\nSTAGE")
-            ct_stage     = Cloudtrail("CloudTrail\nSTAGE")
-            sns_stage    = SNS("Alertas SNS\nSTAGE")
-        with Cluster("demo-ticketing-monitoring-prod"):
-            cw_prod      = Cloudwatch("CloudWatch\nPROD")
-            ct_prod      = Cloudtrail("CloudTrail\nPROD")
-            sns_prod     = SNS("Alertas SNS\nPROD")
+        with Cluster("Workloads"):
+            with Cluster("demo-ticketing-stage"):
+                apigw_s = APIGateway("API Gateway\nSTAGE")
+                fargate_s = Fargate("ECS Fargate\nWorkers STAGE")
+                sfn_s = StepFunctions("Step Functions\nSTAGE")
+                ddb_s = Dynamodb("DynamoDB\nSTAGE")
+                
+                apigw_s >> fargate_s
+                apigw_s >> sfn_s
+                sfn_s >> ddb_s
+                fargate_s >> ddb_s
 
-    # Root → OUs
-    root >> Edge(style="dashed") >> ops_stage
-    root >> Edge(style="dashed") >> ops_prod
-    root >> Edge(style="dashed") >> auth_stage_cog
-    root >> Edge(style="dashed") >> auth_prod_cog
-    root >> Edge(style="dashed") >> apigw_stage
-    root >> Edge(style="dashed") >> apigw_prod
-    root >> Edge(style="dashed") >> cw_stage
-    root >> Edge(style="dashed") >> cw_prod
+            with Cluster("demo-ticketing-prod"):
+                apigw_p = APIGateway("API Gateway\nPROD")
+                fargate_p = Fargate("ECS Fargate\nWorkers PROD")
+                sfn_p = StepFunctions("Step Functions\nPROD")
+                ddb_p = Dynamodb("DynamoDB\nPROD")
 
-    # Operations: GitHub Actions asume rol → tfstate
-    ops_stage >> Edge(label="tfstate\nGitHub Actions", style="dotted", color="orange") >> apigw_stage
-    ops_prod  >> Edge(label="tfstate\nGitHub Actions", style="dotted", color="orange") >> apigw_prod
+                apigw_p >> fargate_p
+                apigw_p >> sfn_p
+                sfn_p >> ddb_p
+                fargate_p >> ddb_p
 
-    # Auth → Workloads
-    auth_stage_lmb >> Edge(label="JWT Validation") >> apigw_stage
-    auth_prod_lmb  >> Edge(label="JWT Validation") >> apigw_prod
+        with Cluster("Monitoring"):
+            with Cluster("demo-ticketing-monitoring-stage"):
+                cw_s = Cloudwatch("CloudWatch\nSTAGE")
+                ct_s = Cloudtrail("CloudTrail\nSTAGE")
+                sns_s = SNS("Alertas SNS\nSTAGE")
+                cw_s >> sns_s
 
-    # Workload internals
-    apigw_stage >> sf_stage >> dynamo_stage
-    apigw_stage >> fargate_stage
+            with Cluster("demo-ticketing-monitoring-prod"):
+                cw_p = Cloudwatch("CloudWatch\nPROD")
+                ct_p = Cloudtrail("CloudTrail\nPROD")
+                sns_p = SNS("Alertas SNS\nPROD")
+                cw_p >> sns_p
 
-    apigw_prod >> sf_prod >> dynamo_prod
-    apigw_prod >> fargate_prod
+    # Flow connections
+    root >> ops_stage
+    root >> ops_prod
+    root >> auth_s_cog
+    root >> auth_p_cog
+    root >> apigw_s
+    root >> apigw_p
+    root >> cw_s
+    root >> cw_p
 
-    # Workloads → Monitoring (cross-account logs)
-    apigw_stage >> Edge(label="Logs/Metrics", color="blue", style="dashed") >> cw_stage
-    apigw_prod  >> Edge(label="Logs/Metrics", color="blue", style="dashed") >> cw_prod
+    ops_stage - Edge(color="orange", style="dotted", label="tfstate\nGitHub Actions") >> apigw_s
+    ops_prod - Edge(color="orange", style="dotted", label="tfstate\nGitHub Actions") >> apigw_p
 
-    auth_stage_lmb >> Edge(label="CloudTrail", color="blue", style="dashed") >> ct_stage
-    auth_prod_lmb  >> Edge(label="CloudTrail", color="blue", style="dashed") >> ct_prod
+    auth_s_lam - Edge(color="gray", label="JWT Validation") >> apigw_s
+    auth_p_lam - Edge(color="gray", label="JWT Validation") >> apigw_p
 
-    cw_stage >> sns_stage
-    cw_prod  >> sns_prod
+    apigw_s - Edge(color="blue", style="dashed", label="Logs/Metrics") >> cw_s
+    apigw_p - Edge(color="blue", style="dashed", label="Logs/Metrics") >> cw_p
+    auth_s_lam - Edge(color="blue", style="dashed", label="CloudTrail") >> ct_s
+    auth_p_lam - Edge(color="blue", style="dashed", label="CloudTrail") >> ct_p
