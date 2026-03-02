@@ -16,9 +16,12 @@ Cada sección incluye **dos formatos**:
 brew install graphviz
 python3 -m venv venv && source venv/bin/activate
 pip install diagrams
+cd assets/diagrams/scripts
 python3 generate_diagram.py
 python3 generate_saga_diagram.py
 python3 generate_auth_diagram.py
+python3 generate_accounts_diagram.py 
+python3 generate_route53_diagram.py
 ```
 
 ## 1. Arquitectura de Despliegue General en AWS
