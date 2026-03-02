@@ -62,7 +62,12 @@ Las cuentas `demo-ticketing-monitoring-stage` y `demo-ticketing-monitoring-prod`
 ### 2.2 Seguridad, Autenticación y Autorización (Repositorio: `demo-ticketing-auth-backend`)
 *   **Amazon Cognito**: Manejo de Pool de Usuarios (Compradores) y un grupo de Administradores (Productores de eventos).
 *   **AWS IAM**: Políticas y roles restrictivos de mínimo privilegio.
-*   **AWS WAF**: Protección del API Gateway frente a ataques DDoS (Bot Control, Rate Limiting).
+*   **API Gateway — Protección nativa** (sin costo adicional):
+    *   **Throttling / Rate Limiting**: `burstLimit` y `rateLimit` configurados en los Usage Plans de API Gateway para prevenir abusos y DDoS de capa 7.
+    *   **Resource Policy**: Allowlist/denylist a nivel de IP o cuenta AWS directamente en API Gateway, sin necesidad de WAF.
+    *   **Request Validators**: Validación nativa de headers obligatorios, query strings y schema JSON del body antes de que el request llegue a la Lambda.
+    *   **Lambda Authorizer**: Valida el JWT en cada request protegido antes de que se ejecute cualquier lógica de negocio.
+    *   **CloudWatch Access Logs**: Registro de todos los accesos para auditoría y detección de patrones anómalos.
 
 ### 2.3 Web App y Client (Repositorios: `demo-ticketing-web` y `demo-ticketing-android`)
 *   **Patrón BFF (Backend For Frontend)**: Para evitar que la Web y la App móvil consuman APIs genéricas pesadas o hagan excesivos llamados de red, la plataforma implementará el patrón **BFF**. Se pondrá al frente un Gateway/Servicio intermedio optimizado y dedicado para la Web, y otro moldeado con menor payload exclusivamente para Android. 

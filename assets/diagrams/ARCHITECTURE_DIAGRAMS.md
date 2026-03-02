@@ -26,11 +26,13 @@ python3 generate_route53_diagram.py
 
 ## 1. Arquitectura de Despliegue General en AWS
 
-Este diagrama ilustra cómo las solicitudes de los usuarios fluyen desde el browser a través de **WAF → CloudFront → API Gateway** hacia los distintos microservicios. Detalla:
+Este diagrama ilustra cómo las solicitudes de los usuarios fluyen desde el browser a través de **CloudFront → API Gateway** hacia los distintos microservicios. Detalla:
 - **Región:** `us-east-1`, **AZ:** `us-east-1a` y `us-east-1b`
-- **WAF** para protección OWASP en borde
+- **Throttling nativo** en API Gateway (Usage Plans: Rate Limit + Burst Limit) como protección contra DDoS de capa 7 — *sin costo adicional de WAF*
+- **Resource Policy** de API Gateway para denylist/allowlist por CIDR o cuenta AWS
+- **Request Validators** nativos en API Gateway (headers, body JSON schema)
 - **CloudFront** para CDN del Frontend SPA
-- **API Gateway** como único punto de entrada
+- **API Gateway** como único punto de entrada a los microservicios
 - **Lambdas Go** para lógica de Auth y APIs Core
 - **ECS Fargate** para workers Java de larga duración
 - **DynamoDB** (multi-AZ) para almacenamiento NoSQL
@@ -46,6 +48,7 @@ graph TD
     CloudFront --> S3Frontend[(S3 Bucket Web Dist)]
     
     User -->|2. REST / JSON| APIGW[AWS API Gateway]
+    note right of APIGW: Rate Limiting (Usage Plan)<br>Request Validators<br>Resource Policy IP Denylist
     
     %% API Gateway Flow
     subgraph "demo-ticketing-auth-backend"

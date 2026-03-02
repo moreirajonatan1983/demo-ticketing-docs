@@ -5,7 +5,9 @@ Al estructurarse sobre un modelo predominantemente **Serverless**, los costos ba
 
 ---
 
-## 1. Análisis y Estimación de Costos Mensuales AWS (Producción Simulada)
+## 1. Análisis y Estimación de Costos y Tiempos
+
+> **Nota:** Este proyecto utiliza **API Gateway nativo** (Throttling/Usage Plans + Request Validators + Resource Policy) en lugar de AWS WAF. Esto elimina el costo fijo de WAF (~$5+ USD/mes por WebACL) manteniendo las protecciones esenciales de Rate Limiting y validación de requests.
 
 *Nota importante (Lifecycle FinOps)*: Si bien vamos a desarrollar el MVP teniendo meticulosamente en cuenta el plan "Free Tier" (Capa Gratuita), **igualmente se ha agregado el costo proyectado de los servicios a escala**. El plan Free Tier no dura para siempre (está sujeto a límites por año o por volumen de invocaciones), y en etapas productivas todos los costos operativos de infraestructura deben estimarse y cobrarse para asegurar la rentabilidad del proyecto B2B.
 
