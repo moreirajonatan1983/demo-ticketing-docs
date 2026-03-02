@@ -2,6 +2,8 @@
 
 > **Plataforma de Venta Masiva de Entradas**
 
+🚀 **IA-First Approach:** Este proyecto fue concebido y desarrollado bajo un paradigma *IA-First*. Comprendiendo a fondo la lógica de negocio, arquitectura de alta demanda y patrones de diseño necesarios, la construcción de la plataforma (código, infraestructura y documentación) se ha apoyado en colaboración directa con agentes de IA autónomos (especialmente **Antigravity** de Google DeepMind) operando directamente sobre el entorno local.
+
 ## 1. Visión del Producto y Negocio
 **Ticketera Cloud** es una solución diseñada para gestionar la venta masiva de entradas a eventos de muy alta demanda. Su objetivo principal es garantizar una experiencia de compra fluida y transparente para los fans, incluso durante picos extremos de tráfico mundial (flash crowds y sold-outs en segundos).
 
