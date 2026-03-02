@@ -39,7 +39,7 @@ Explora los siguientes documentos funcionales y técnicos para sumergirte en el 
 - [**Análisis de Costos (AWS) y Cronograma Semanal**](./02_COST_AND_TIME_ESTIMATION.md)
 - [**Esquemas de Datos en Base de Datos NoSQL (DynamoDB)**](./07_DATA_SCHEMAS.md)
 
-## 5. Implementación MVP Finalizada ✅
+## 5. Implementación MVP ✅
 A lo largo de múltiples iteraciones, el MVP demostrativo de este proyecto completó con éxito el **100% de las historias de usuario planificadas**:
 1. **Transacciones Resilientes**: Implementación asíncrona mediante un patrón **SAGA Core (Step Functions)** para retenciones, compensaciones de inventario y resolución de compras. DLQs creados para eventos erróneos de mensajería (SQS).
 2. **Workers Serverless (Java/Spring)**: Despliegue de servicios asíncronos pesados (`worker`, `waiting-room`, `notification`) utilizando **AWS ECS con Fargate**. Escalabilidad elástica e integración nativa sin administrar capas de nodos infraestructurales.
