@@ -8,7 +8,7 @@ Dada la arquitectura hexagonal, nuestras aserciones y "mocks" se ejecutan al niv
 
 ## 1. Pruebas Unitarias (Unit Testing)
 Enfoque: **TDD (Test-Driven Development) sobre el Core Hexagonal**.
-- **Herramientas Previstas**: `Jest` o `Vitest` (Node.js), `testing` o `testify` (Golang) para Serverless. Para K8S Workers (Java 21), se utilizará `JUnit 5` y `Mockito`.
+- **Herramientas Previstas**: `Jest` o `Vitest` (Node.js), `testing` o `testify` (Golang) para Serverless. Para Workers ECS Fargate (Java 21), se utilizará `JUnit 5` y `Mockito`.
 - **Cobertura Objetivo**: Mínimo 85% sobre el dominio lógico (Use Cases, Entities).
 - **Alcance Funcional**:
   - Validar lógica de negocio del carrito (descuentos, reglas paramétricas).
@@ -20,7 +20,7 @@ Enfoque: **TDD (Test-Driven Development) sobre el Core Hexagonal**.
 Enfoque: **Asegurar que las Lambdas y la nube interactuán bajo contrato estricto sin romper desarrollos pasados.**
 - **Entorno**: Se correrán predominantemente utilizando **AWS SAM Local** + **LocalStack**. Las pruebas dispararán _Eventos y Payloads_ simulados idénticos a los del `API Gateway` directamente contra el handler.
 - **Pruebas de Regresión Continua (CI/CD)**: Cada _Pull Request_ levantará las pruebas unitarias y de integración del microservicio involucrado usando **GitHub Actions**. El código no será promovido (Merge) a `main` si alguna aserción antigua se rompe (evitando regresiones fantasma).
-- **Contratos (Pact Testing)**: Verificación de contrato entre el Microservicio _Core_ que arma órdenes y el Worker de Kubernetes que produce facturas/PDFs leyendo de SQS, asegurando que todos procesan el mismo esquema JSON.
+- **Contratos (Pact Testing)**: Verificación de contrato entre el Microservicio _Core_ que arma órdenes y el Worker en AWS ECS Fargate que produce facturas/PDFs leyendo de SQS, asegurando que todos procesan el mismo esquema JSON.
 
 ## 3. Pruebas de Alta Concurrencia (Load / Stress Testing)
 El requisito más crítico de cualquier sistema "Ticketera" es sobrevivir a instantes masivos de usuarios concurrentes sin originar sobreventas, carreras de base de datos o latencias fatales por Timeouts.
@@ -31,7 +31,7 @@ El requisito más crítico de cualquier sistema "Ticketera" es sobrevivir a inst
   1.  **Bloqueo Optimista**: La base de datos (DynamoDB o Redis) **debe** rechazar el 99.9% de intentos para un mismo "asientoX" reportando el mensaje esperado "Asiento no disponible", comprobando que la condición bloqueadora atómica y las compensaciones SAGA funcionen perfecto under stress.
   2.  **Límite Concurrencia de Lambda (Throttling)**: Aserción verificando que el API Gateway responde `429 Too Many Requests` u encola (SQS) la peticion amablemente, enviando a usuarios una sala de espera si se toca la cuota, sin saturar la DB y caerse el sistema entero (`500 Internal Server Error`).
   3.  **Circuit Breaker (Pasarela Simulada)**: Someter el servidor mock de pagos a cargas letales. Visualizar si nuestro Circuit Breaker efectivamente se abre y aborta transacciones en la red antes de ahogar los workers.
-- **Monitoreo Local/Gratuito**: Minikube (para trabajadores) validando su AutoScaling con KEDA contra cuellos de botella en la cola, mientras Lambdas arrojan trazas locales a AWS SAM para revisión de latencias medias.
+- **Monitoreo Local/Gratuito**: Docker Desktop (para los workers) validando su comportamiento con mensajes en cola SQS contra cuellos de botella, mientras Lambdas arrojan trazas locales a AWS SAM para revisión de latencias medias.
 
 ## 4. Auditoría de Seguridad y Pentesting (SecOps)
 Dada la criticidad de un negocio que tracciona operaciones de tarjetas de crédito y retiene información PII (Nombres, DNI, Emails de asistentes), la plataforma exige la implementación formal de prácticas de *Security Operations*:

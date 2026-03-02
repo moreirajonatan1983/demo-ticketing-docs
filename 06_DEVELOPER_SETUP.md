@@ -10,8 +10,7 @@ Deberás tener instalado en tu estación de trabajo (macOS, Linux o Windows WSL2
 2.  **AWS CLI / AWS CLI Local (`awslocal`)**: Herramientas para interactuar con AWS y LocalStack.
 3.  **AWS SAM CLI**: Para emular `AWS Lambda` localmente.
 4.  **LocalStack**: Emulación de SQS, S3, DynamoDB y Step Functions localmente.
-5.  **Minikube & `kubectl` / `helm`**: Cluster local para los servicios Java y KEDA.
-6.  **Golang 1.21+, Node.js 20+, Java 21 y Maven**: Lenguajes y gestores de dependencias necesarios.
+5.  **Golang 1.21+, Node.js 20+, Java 21 y Maven**: Lenguajes y gestores de dependencias necesarios.
 
 ---
 
@@ -36,45 +35,35 @@ El repositorio `demo-ticketing-backend` aloja la arquitectura AWS. Se utiliza **
 
 ---
 
-## 3. Levantando el Worker Asíncrono (Kubernetes / Minikube)
+## 3. Levantando el Worker Asíncrono (AWS ECS Fargate / Docker local)
 
-El proceso pesado (e.g. compilar mil PDFs de entradas tras un Sold-Out) no corre en Lambda. Corre en nuestro clúster local para probar el patrón de consumidor SQS/KEDA.
+El proceso pesado (e.g. compilar mil PDFs de entradas tras un Sold-Out) no corre en Lambda. Corre como contenedor Java local para probar el patrón de consumidor SQS antes de deployar a ECS Fargate en AWS.
 
-1.  **Iniciar Minikube**:
-    ```bash
-    minikube start --driver=docker
-    ```
-2.  **Habilitar Ingress y KEDA**:
-    ```bash
-    minikube addons enable ingress
-    helm repo add kedacore https://kedacore.github.io/charts
-    helm install keda kedacore/keda --namespace keda --create-namespace
-    ```
-3.  **Compilar y Desplegar Servicios Java**:
+1.  **Compilar los Servicios Java**:
     Para cada servicio (`waiting-room-service`, `ticket-worker`, `notification-service`):
     ```bash
     cd demo-ticketing-services-backend/services/[service-name]
     mvn clean package -DskipTests
-    # Construir imagen en el daemon de minikube
-    eval $(minikube docker-env)
     docker build -t [service-name]:latest .
-    # Aplicar manifiestos
-    kubectl apply -f k8s/
     ```
-4.  **Verificar Autoscale (KEDA)**:
+2.  **Levantar los Workers con Docker Compose**:
     ```bash
-    kubectl get pods -n ticketera
-    kubectl logs -f -l app=ticket-worker -n ticketera
+    cd demo-ticketing-services-backend
+    docker compose up -d
+    ```
+3.  **Verificar los contenedores activos**:
+    ```bash
+    docker ps
+    docker logs -f ticket-worker
     ```
 
-### 3.1. Monitoreo del Clúster (Prometheus / Grafana)
-Todas las aplicaciones Java inyectan sus métricas a través de sus endpoints `/actuator/prometheus`.
-Para visualizar la telemetría métrica en tiempo real y el estado de los workers, debes invocar el stack the Prometheus desde tu cluster Minikube:
-1.  **Ejecutar el Port-Forward al servidor de Dashboards (Grafana)**:
-    ```bash
-    kubectl port-forward svc/prometheus-grafana 3001:80 -n monitoring
-    ```
-    Y accede al navegador apuntando a `http://localhost:3001` (User: `admin`). La base de datos de telemetría inyectada se actualiza cada 5s.
+### 3.1. Monitoreo de los Workers (Actuator / Logs)
+Todas las aplicaciones Java exponen sus métricas a través de sus endpoints `/actuator/health` y `/actuator/metrics`.
+Para visualizar el estado de un worker en tiempo real:
+```bash
+curl http://localhost:8081/actuator/health
+```
+Los logs estructurados de cada servicio pueden seguirse directamente con `docker logs -f [service-name]`.
 
 ---
 

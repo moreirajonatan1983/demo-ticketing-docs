@@ -39,4 +39,4 @@ Dado que consolidar el PDF "Balance Financiero" de un concierto de estadio requi
 - El Backoffice tiene una pestaña **"Descargar Reporte de Cierre"**.
 - Al presionarlo, el UI simplemente manda un Request (Command) que inyectará un mensaje en la cola **Amazon SQS**.
 - El UI muestra un estado de "Procesando Reporte... Le enviaremos un correo".
-- Simultáneamente, el Worker asíncrono en Kubernetes (**Minikube** en local) absorbe el SQS message, macera y procesa la data sin apurar a la base DynamoDB de prod, lo consolida en Excel/CSV, sube el reporte final a `S3`, y el Backend dispara un mail de **Amazon SES** la Productora: *"Su Reporte B2B ya está listo para descargar"*.
+- Simultáneamente, el Worker asíncrono en **AWS ECS (Fargate)** absorbe el SQS message, macera y procesa la data sin apurar a la base DynamoDB de prod, lo consolida en Excel/CSV, sube el reporte final a `S3`, y el Backend dispara un mail de **Amazon SES** a la Productora: *"Su Reporte B2B ya está listo para descargar"*.

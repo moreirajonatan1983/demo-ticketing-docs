@@ -43,7 +43,7 @@ La plataforma `demo-ticketing` no sólo ostentará una robusta ingeniería backe
 ### 2.5 Pantalla del Comprador Privada: "Mis Tickets" (`/profile/tickets`)
 - Panel de gestión para visualizar eventos pasados y próximos consumiendo el JWT en cada llamada `Bearer [Token]` en el Dashboard API REST.
 - Render estático de los Códigos QR por Entrada.
-- Opción a un botón "Descargar Entradas en PDF" (Detona en background al Worker Kubernetes).
+- Opción a un botón "Descargar Entradas en PDF" (Detona en background al Worker en AWS ECS Fargate).
 
 ### 2.6 Pantalla Administrativa [Solo Productores]: "Dashboard BI Metrics" (`/admin`)
 - Pantalla protegida y ruteada exclusivamente si el Token JWT expuesto posee la propensión (claim) o rol IAM de Administrador (Role-Based Access Control / RBAC).

@@ -1,4 +1,4 @@
-# ADR 001: Separación de Backend (Go/SAM vs Java/K8s)
+# ADR 001: Separación de Backend (Go/SAM vs Java/ECS Fargate)
 
 ## Estado
 Aceptado
@@ -16,10 +16,10 @@ Hemos decidido dividir el backend en dos repositorios/enfoques tecnológicos dis
 *   **Tecnología**: Golang por su baja latencia, inicio en frío (Cold Start) mínimo y tipado estricto.
 *   **Despliegue**: Serverless (AWS Lambda, API Gateway, DynamoDB, Step Functions).
 
-### 2. `demo-ticketing-services-backend` (Java 21 + Spring Boot + Kubernetes)
+### 2. `demo-ticketing-services-backend` (Java 21 + Spring Boot + ECS Fargate)
 *   **Responsabilidad**: Workers asíncronos (`ticket-worker`, `notification-service`) y servicios con estado/scheduling (`waiting-room-service`).
 *   **Tecnología**: Java 21 (JVM) por su robustez en el manejo de hilos para tareas pesadas, ecosistema de librerías para PDF y Spring Boot para el manejo fluido de Redis y SQS.
-*   **Despliegue**: Contenedores en Kubernetes (AWS EKS) con auto-escalado KEDA basado en eventos.
+*   **Despliegue**: Contenedores Serverless en AWS ECS (Fargate) con Service Auto Scaling basado en eventos de AWS SQS.
 
 ## Consecuencias
 *   **Pros**:

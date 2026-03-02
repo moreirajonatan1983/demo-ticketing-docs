@@ -7,7 +7,7 @@ Se evidencia un modelo de trabajo ágil iterativo (Scrum/Kanban) centrado estric
 
 ### Fase 0: Descubrimiento y Diseño (Fase Actual)
 Antes de escribir cualquier línea de código, se establecen las fundaciones:
-1.  **Levantamiento de Requerimientos Técnicos:** Identificar restricciones de negocio (Alta concurrencia de tickets) y requerimientos tecnológicos (Uso Exclusivo de AWS Free-Tier, Serverless, Patrones CQRS, Saga, Pub/Sub, Kubernetes).
+1.  **Levantamiento de Requerimientos Técnicos:** Identificar restricciones de negocio (Alta concurrencia de tickets) y requerimientos tecnológicos (Uso Exclusivo de AWS Free-Tier, Serverless, Patrones CQRS, Saga, Pub/Sub, AWS ECS Fargate).
 2.  **Arquitectura del Dominio y Diagramado:** (C4 Model).
     *   Nivel Contexto y Nivel Contenedor: Diseñados en Draw.io / Excalidraw, exportados e incrustados en `01_ARCHITECTURE.md`. **Todos los diagramas deben utilizar la especificación y paleta de iconos oficiales de AWS18**.
 3.  **Provisión de Entorno AWS Multi-Cuenta:** 
@@ -19,11 +19,11 @@ Antes de escribir cualquier línea de código, se establecen las fundaciones:
 
 ### Fase 2: Construcción Central (El "Core" Backend)
 *   **Patrones Funcionales**: Se decide la **Arquitectura Hexagonal (Ports & Adapters)** dentro de cada uno de los microservicios/Lambdas core. El Dominio (Ej. Entidades como de Orden/Compra) se aloja en el núcleo abstracto, aislando todas las interacciones de los Frameworks (AWS SDK, Redis, SQS, API Gateway).
-*   **TDD y Trazabilidad**: El código backend Serverless (**Node.js y Go**) y los workers Kubernetes (**Java 21**) se desarrollan con el inyector de `AWS X-Ray` activo desde el día uno y tests unitarios a los _UseCases_ de la arquitectura Hexagonal mediante mocks (sin tocar AWS localmente).
+*   **TDD y Trazabilidad**: El código backend Serverless (**Node.js y Go**) y los workers en ECS Fargate (**Java 21**) se desarrollan con el inyector de `AWS X-Ray` activo desde el día uno y tests unitarios a los _UseCases_ de la arquitectura Hexagonal mediante mocks (sin tocar AWS localmente).
 
-### Fase 3: Worker Híbrido y Procesos Asíncronos (Kubernetes)
-*   Se diseña el desarrollo del componente Batch masivo de la Ticketera priorizando el desarrollo enteramente sobre ambientes **Minikube** locales.
-*   *Nota Free-Tier*: Toda demostración de clústeres orquestadores locales (Workers generando reportes o emitiendo PDFs) en Kubernetes debe ser soportada directamente en la estación de desarrollo con Minikube, sin necesidad de aprovisionar Amazon EKS (Managed Service), validando de forma completamente gratuita el desacople de sistemas basados en KEDA u operadores asíncronos.
+### Fase 3: Worker Híbrido y Procesos Asíncronos (AWS ECS Fargate)
+*   Se diseña el desarrollo del componente Batch masivo de la Ticketera priorizando el desarrollo sobre ambientes **Docker** locales (Docker Desktop).
+*   *Nota Free-Tier*: Toda demostración de workers asíncronos (generando reportes o emitiendo PDFs) debe ser soportada directamente en la estación de desarrollo con Docker Desktop/OrbStack, sin necesidad de aprovisionar Amazon EKS. En producción, las Tasks de Fargate escalan por demanda y solo se cobra el tiempo real de cómputo.
 
 ## 2. Herramientas de Planificación (Ciclo de Gestión)
 El desarrollo y planificación de historias de usuario (Tickets/Issues) seguirá un abordaje profesional similar a Jira/Linear usando **GitHub Projects / Issues**.
@@ -51,5 +51,5 @@ Cada requerimiento arquitectónico se desagrega en un flujo:
 Asegurar que todas las opciones presenten una facturación virtual de `$0.00`:
 *   **Lambda, SQS y SNS**: Generosos dentro del capa gratuita (1 millon / 1 millon por mes). Emulados en local con AWS SAM CLI previo al salto.
 *   **DynamoDB y Aurora Min-Capacity**: Se utilizará facturación de capacidad "On-Demand" asegurando que las pruebas de concurrencia CQRS y Saga limiten drásticamente el costo al volumen exacto procesado y no paguen RCU/WCU inactivo de base de datos encendida. Emulación con `DynamoDB Local` donde se pueda.
-*   **Kubernetes (Minikube)**: Ausencia absoluta de costos por el orquestador o Control Plane gracias a operar localmente. Evita el costo mínimo de ~72$ USD mensuales de Amazon EKS, cumpliendo el requerimiento de evaluación bajo costo Cero de la autoevaluación simulando los Workers en la estación de trabajo.
+*   **ECS Fargate (Docker local)**: Ausencia de costos de orquestador gracias a correr las imágenes localmente con Docker Desktop. Evita el costo mínimo de ~72$ USD mensuales de Amazon EKS, cumpliendo el requerimiento de evaluación bajo costo cero simulando los Workers en la estación de trabajo.
 *   **Teardown Automático**: Todas las plantillas de Infraestructura desplegadas en las cuentas provisionadas por Management (`AWS Organizations`) con SAM CLI estarán contenidas en ambientes (`sam deploy --no-confirm-changeset`) fácilmente destructibles con `sam delete` al cierre de cualquier jornada.

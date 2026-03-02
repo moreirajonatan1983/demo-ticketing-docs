@@ -6,7 +6,7 @@ Este diagrama modela la lógica transaccional de la compra de una entrada en la 
 architecture-beta
     group api(cloud)[API & Entrypoint]
     group saga(cloud)[SAGA Orchestrator]
-    group worker(cloud)[K8s Workers]
+    group worker(cloud)[ECS Fargate Workers]
     group data(cloud)[Databases]
 
     service web(internet)[Client SPA] in api
@@ -21,8 +21,8 @@ architecture-beta
     service ddb(dynamodb)[DynamoDB] in data
     
     service sqs(sqs)[SQS] in worker
-    service w1(eks)[ticket-worker] in worker
-    service w2(eks)[notification-service] in worker
+    service w1(ecs)[ticket-worker] in worker
+    service w2(ecs)[notification-service] in worker
     service s3(s3)[Amazon S3] in worker
     service sns(sns)[Amazon SNS] in worker
 

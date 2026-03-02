@@ -1,7 +1,7 @@
 # Arquitectura de la Plataforma de Venta de Entradas (Ticketing)
 
 Esta es la documentación técnica y arquitectónica para el proyecto `demo-ticketing`.
-Se trata de una plataforma orientada a la venta masiva de entradas para eventos (Ticketera), diseñada desde cero con una arquitectura altamente escalable (mayormente Serverless), orientada a eventos para absorber picos repentinos de tráfico, y con procesamiento en background mediante Kubernetes (EKS).
+Se trata de una plataforma orientada a la venta masiva de entradas para eventos (Ticketera), diseñada desde cero con una arquitectura altamente escalable (mayormente Serverless), orientada a eventos para absorber picos repentinos de tráfico, y con procesamiento en background mediante contenedores Serverless (AWS ECS Fargate).
 
 ## 1. Objetivos del Proyecto
 *   **Resolver alta concurrencia**: Ventas concurrentes de entradas (`DynamoDB` + bloqueos optimistas o colas `SQS` / `EventBridge`).
@@ -70,7 +70,7 @@ Las cuentas `demo-ticketing-monitoring-stage` y `demo-ticketing-monitoring-prod`
 *   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume un BFF optimizado para redes móviles con payloads más reducidos.
 
 ### 2.4 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-backend`)
-*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en Kubernetes (Minikube) estarán desarrollados en **Java 21**. Para más detalles sobre esta decisión, ver [ADR 001: Separación de Backend](./ADR_001_BACKEND_SEPARATION.md).*
+*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en AWS ECS (Fargate) estarán desarrollados en **Java 21**. Para más detalles sobre esta decisión, ver [ADR 001: Separación de Backend](./ADR_001_BACKEND_SEPARATION.md).*
 
 #### A. Sala de Espera Virtual (Virtual Waiting Room)
 Componente periférico que intercepta el tráfico de una entrada antes de que alcance las APIs transaccionales. Emplea un sistema en memoria (ej: Amazon ElastiCache / Redis) para ordenar a los usuarios y asignarles una posición en la fila frente a picos de demanda, permitiéndoles entrar de forma racionada y controlada al checkout (Mitigación total de Flash Crowds).
@@ -92,18 +92,18 @@ Dado el alto volumen de lecturas (usuarios buscando eventos) frente a las escrit
     *   Una Lambda que inyecta en **Amazon Pinpoint / SNS** para emitir **Notificaciones Push** (Push Notifications SMS/Firebase) a la App del cliente y envío de Email (`Amazon SES`).
     *   Un SQS Queue para alimentar al motor en background de reportística.
 
-#### D. Worker Batch y Procesamiento Intenso (Orquestación en Kubernetes - Java 21)
-*   **Amazon EKS (Elastic Kubernetes Service)**:
+#### D. Worker Batch y Procesamiento Intenso (Orquestación en AWS ECS Fargate - Java 21)
+*   **Amazon ECS (Elastic Container Service) con Fargate**:
     *   Procesos muy pesados asíncronos que no caben en Lambdas: Generación de consolidado contable en Excel/CSV, procesamiento de videos o imágenes de los "flyers" del evento, generación batch de los millares de PDFs con códigos QR asegurados con firmas criptográficas.
     *   Para estas tareas se emplearán microservicios estructurados en **Java 21** optimizados para cargas batch.
-    *   **KEDA**: Kubernetes Event-driven Autoscaling, que lanza Pods reactivamente cuando se acumulan mensajes en la cola de SQS. Una vez terminados, envía el archivo al **Amazon S3**.
+    *   **Escalado Automático**: Application Auto Scaling basado en SQS/CloudWatch, que lanza contenedores (Tasks) reactivamente cuando se acumulan mensajes en la cola. Una vez terminados, envía el archivo al **Amazon S3**.
 
 ## 3. Observabilidad & Trazabilidad
 *   **AWS X-Ray**: Habilitado en **API Gateway**, **Lambda** y **Step Functions**, permitiendo trazar cuánto tarda en procesarse un ticket "end-to-end", visualizando los cuellos de botella exactos en mapas de servicios.
 *   **CloudWatch**: Alarmas configuradas por umbrales (Ej: "Si un Circuit Breaker supera 50 fallos contiguos, alertar"). Metrics personalizadas para el negocio, como "TicketsVendidos" o "PagosRechazados".
 
 ---
-*Este ecosistema garantiza cumplir con las expectativas de sistemas High-Traffic o Flash-Sales de la vida real mediante cloud-native serverless, sumado al músculo crudo de Kubernetes, patrones avanzados (SAGA, CQRS, PUB/SUB, Circuit Breaker) y visibilidad de grado empresarial.*
+*Este ecosistema garantiza cumplir con las expectativas de sistemas High-Traffic o Flash-Sales de la vida real mediante cloud-native serverless, sumado al músculo crudo de contenedores sin servidor (AWS ECS Fargate), patrones avanzados (SAGA, CQRS, PUB/SUB, Circuit Breaker) y visibilidad de grado empresarial.*
 
 ## 4. Diagramas Visuales (AWS18)
 Todos los esquemas visuales y flujogramas de arquitectura se encuentran almacenados y estructurados bajo la notación oficial visual de AWS18 dentro de este repositorio:

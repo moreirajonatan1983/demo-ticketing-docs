@@ -19,7 +19,7 @@ C4Context
     Rel(user, ticketera, "Busca eventos, se loguea y compra entradas", "HTTPS")
     Rel(user, cognito_auth, "Se registra, valida identidad", "HTTPS / OpenID Connect")
     
-    Rel(admin, ticketera, "Extrae reportes financieros batchs generados por el worker en Minikube", "HTTPS")
+    Rel(admin, ticketera, "Extrae reportes financieros batchs generados por el worker en ECS Fargate", "HTTPS")
     Rel(admin, cognito_auth, "Ingresa al pool de administradores", "HTTPS / SAML")
     
 Rel(ticketera, gateway_pago, "Deduce fondos monetarios y valida cobro", "Rest API secured")
@@ -35,7 +35,7 @@ Este diagrama detalla los servicios internos que conforman el sistema "Ticketera
 architecture-beta
     group frontend(cloud)[Frontend & Clients]
     group aws_core(cloud)[AWS Serverless Core - Backend]
-    group k8s_cl(cloud)[Kubernetes Cluster - Offload]
+    group ecs_cl(cloud)[ECS Fargate Workers]
     group storage(cloud)[Data Storage]
 
     service webapp(internet)[React Web/Mobile] in frontend
@@ -44,8 +44,8 @@ architecture-beta
     service fn_tickets(lambda)[tickets-lambda] in aws_core
     service fn_seats(lambda)[seats-lambda] in aws_core
     
-    service wr(eks)[waiting-room-java] in k8s_cl
-    service worker(eks)[ticket-worker-java] in k8s_cl
+    service wr(ecs)[waiting-room-java] in ecs_cl
+    service worker(ecs)[ticket-worker-java] in ecs_cl
 
     service db(dynamodb)[DynamoDB] in storage
     service cache(elasticache)[Redis] in storage

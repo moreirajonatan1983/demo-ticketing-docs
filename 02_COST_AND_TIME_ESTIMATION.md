@@ -21,7 +21,7 @@ A efectos de esta estimación base, se calcula un volumen de impacto moderado-al
 | **Amazon EventBridge** | Bus de Eventos | 200,000 Eventos | **$0.00** | ✅ SÍ | Free Tier: Infinito para fuentes AWS. |
 | **Amazon SQS / SNS** | Filas / Notificaciones| 300,000 Operaciones | **$0.00** | ✅ SÍ | Free Tier: 1 Millón peticiones/mes perpetuo |
 | **AWS WAF** | Web Firewall | 1 WebACL + 3 Reglas | **~$12.00** | ❌ NO | Sin capa gratuita. Costo estático mandatorio. |
-| **Worker (Kubernetes)** | Reportes en Java 21 | Instancias t3.medium | **$0.00** (Local) | ✅ SÍ (Vía Minikube) | EKS real o Fargate costaría ~$70-$100/mes |
+| **Worker (ECS Fargate)** | Reportes en Java 21 | Tasks en Docker local | **$0.00** (Local) | ✅ SÍ (Vía Docker Desktop) | Fargate en prod costaría ~$20-$50/mes (pay-per-use) |
 | **AWS X-Ray/CloudWatch**| Métricas/Trazas | 1 Custom Dashboard | **$0.00** | ✅ SÍ | Free tier cubre 100,000 trazas recopiladas |
 
 **Total TCO (Total Cost of Ownership) Estimado Mensual: ~$9.50 USD**
@@ -29,13 +29,13 @@ A efectos de esta estimación base, se calcula un volumen de impacto moderado-al
 
 ---
 
-## 1.1 Comparativa de Costos: Serverless vs Arquitectura Clásica K8s
-A nivel estratégico, la Ticketera opta por Serverless frente a una arquitectura monolítica (o basada 100% en contenedores permanentes, como Amazon EKS/ECS) debido a los abismales ahorros en "Idle Time" (Tiempo Inactivo). 
+## 1.1 Comparativa de Costos: Serverless vs Arquitectura Clásica Tradicional
+A nivel estratégico, la Ticketera opta por Serverless frente a una arquitectura monolítica (o basada 100% en contenedores permanentes, como AWS ECS Fargate) debido a los abismales ahorros en "Idle Time" (Tiempo Inactivo).
 
 | Tipo de Arquitectura | Costo Inactivo (Noche/Madrugada) | Respuesta a Flash Crowds | Costo Base Mensual Mínimo |
 | :--- | :--- | :--- | :--- |
 | **Arquitectura Serverless (La nuestra)** | **$0.00** (Las Lambdas/API no cobran si no hay tráfico) | Escala en milisegundos hasta miles de instancias concurrentes | **~$9.50** (Solo el WAF fijo) |
-| **Arquitectura No-Serverless (K8s / EKS)** | Sigue facturando 100% de los Nodos EC2 ($$$) | Requiere pre-saturar Nodos (Auto-Scaling lento, demora minutos) | **~$150+** ($73 Control Plane + Nodos Fijos/Load Balancers) |
+| **Arquitectura No-Serverless (AWS ECS Fargate / Nodos EC2)** | Sigue facturando 100% de los Nodos EC2 ($$$) | Requiere pre-saturar Nodos (Auto-Scaling lento, demora minutos) | **~$150+** ($73 Control Plane + Nodos Fijos/Load Balancers) |
 
 *Conclusión*: Para el caso de uso del proyecto (donde el 90% de las ventas masivas suceden en una ventana de 2 horas al anunciar el evento), **Serverless previene malgastar presupuesto pagando instancias y clústeres inactivos** el resto de la semana.
 
@@ -46,7 +46,7 @@ El despliegue, planificación y éxito del proyecto B2B no solo depende de AWS, 
 
 | Categoría | Concepto y Requisitos | Costo Aproximado / Status |
 | :--- | :--- | :--- |
-| **Hardware (Desarrollo Central)** | Apple MacBook Pro (M-Series) o Thinkpad i7/32GB RAM (Necesario para soportar IDEs pesados, Docker Desktop y Minikube locales sin latencia). | ~$1,500 - $2,500 (Gasto Fijo CapEx único) |
+| **Hardware (Desarrollo Central)** | Apple MacBook Pro (M-Series) o Thinkpad i7/32GB RAM (Necesario para soportar IDEs pesados y Docker Desktop locales sin latencia). | ~$1,500 - $2,500 (Gasto Fijo CapEx único) |
 | **Hardware (Despliegue/CI-CD)** | Computadora secundaria, Servidor ligero o Runner de Actions en Nube dedicado para pipeline seguro. | Incluido en GitHub Actions (Minutos Tier) |
 | **Inteligencias Artificiales (Planificación y Dev)** | Licencias de **Google Antigravity (Plan Ultra / Workspace AI Ultra for Business)**. Requerido obligatoriamente para ingeniería pesada. Un desarrollador trabajando intensivamente de lunes a viernes (8h/día) generando refactors y scaffolding agotará rápidamente los "Rate Limits" de los planes Individual o Developer. Para sostener ese caudal sin bloqueos o caídas a modelos inferiores (Flash), se exige la suscripción "Ultra". | ~$200.00 - $250.00 USD / mes por dev |
 | **Auditoría y Pentesting (SecOps)** | Licencias de plataformas DAST/SAST (Ej. **OWASP ZAP Pro, Snyk, SonarQube Enterprise**). Cruciales para blindaje automatizado contra vulnerabilidades Serverless, escaneo de dependencias y ataques de manipulación de JSON. | ~$40.00 - $100.00 USD / mes |
@@ -76,5 +76,5 @@ La planificación se enfoca en entregar un núcleo funcional con los patrones ap
 
 ### Sprint 4 (Semana 4): Asincronía, Batch y Pulido CI/CD
 *   **Pub/Sub (Día 1-2):** Disparo de EventBridge cuando "Ticket=Emitido" -> SQS/SNS -> Email/Push Notifier Lambdas.
-*   **K8S Batch (Día 3-4):** Integración de Worker Local (Minikube). Consumer en Go o Node.js que extrae de la cola SQS para simular la generación de cientos de PDF / Reportes Csv y envía a S3 local/en nube.
+*   **ECS Fargate Batch (Día 3-4):** Integración de Worker Local (Docker). Consumer en Java/Spring que extrae de la cola SQS para simular la generación de cientos de PDF / Reportes Csv y envía a S3 local/en nube.
 *   **Testeo & CI/CD (Día 5):** Pruebas E2E de integraciones con SAM Local. Creación de los Workflows de Github Actions. Revisión de gráficas de AWS X-Ray.

@@ -11,13 +11,13 @@ Se opta por un diseño apoyado fuertemente en **Caché y Mensajería Rápida (El
 ```mermaid
 architecture-beta
     group client(cloud)[Front End]
-    group k8s(cloud)[Kubernetes EKS]
+    group fargate(cloud)[AWS ECS Fargate]
     group data(cloud)[Cache Storage]
 
     service web(internet)[Client App] in client
     
-    service wr(eks)[waiting-room-service] in k8s
-    service p(prometheus)[Prometheus] in k8s
+    service wr(ecs)[waiting-room-service] in fargate
+    service p(cloudwatch)[CloudWatch] in fargate
     
     service r(elasticache)[Redis Cache] in data
 
