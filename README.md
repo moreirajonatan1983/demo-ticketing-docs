@@ -12,7 +12,7 @@
 - **Acceso Omnicanal**: Disponibilidad equitativa a través de plataforma web y aplicación móvil nativa.
 
 ## 2. Visión Técnica y Arquitectura
-Para lograr cumplir con las demandas del negocio sin comprometer la estabilidad, la plataforma se apoya bajo el capó en una arquitectura de microservicios elástica. Utiliza un ecosistema híbrido entre **AWS Serverless** (Lambda, Step Functions, EventBridge) para transacciones ultra-rápidas, y contenedores administrados (como **Kubernetes**) para cargas más pesadas o procesos batch.
+Para lograr cumplir con las demandas del negocio sin comprometer la estabilidad, la plataforma se apoya bajo el capó en una arquitectura de microservicios elástica. Utiliza un ecosistema híbrido entre **AWS Serverless** (Lambda, Step Functions, EventBridge) para transacciones ultra-rápidas, y contenedores serverless como **AWS ECS (Fargate)** para cargas más pesadas o procesos batch.
 
 Se aplican patrones de diseño distribuidos como *Saga* (para asegurar compras exactas sin problemas de consistencia) y *Circuit Breaker*. Todo esto rodeado de una fuerte estrategia de observabilidad y telemetría.
 
@@ -42,10 +42,10 @@ Explora los siguientes documentos funcionales y técnicos para sumergirte en el 
 ## 5. Implementación MVP Finalizada ✅
 A lo largo de múltiples iteraciones, el MVP demostrativo de este proyecto completó con éxito el **100% de las historias de usuario planificadas**:
 1. **Transacciones Resilientes**: Implementación asíncrona mediante un patrón **SAGA Core (Step Functions)** para retenciones, compensaciones de inventario y resolución de compras. DLQs creados para eventos erróneos de mensajería (SQS).
-2. **Kubernetes Java Workers**: Despliegue de los servicios offload en Minikube Java 21 (`worker`, `waiting-room`, `notification`). KEDA incorporado para Serverless Autoscaling junto con observabilidad local interceptada por **Prometheus + Grafana PodMonitors y Actuators**.
+2. **Workers Serverless (Java/Spring)**: Despliegue de servicios asíncronos pesados (`worker`, `waiting-room`, `notification`) utilizando **AWS ECS con Fargate**. Escalabilidad elástica e integración nativa sin administrar capas de nodos infraestructurales.
 3. **Observabilidad Distribuida**: Instrumentación y tracing logradas nativamente inyectando el AWS X-Ray SDK directamente sobre el código nativo Golang y los adaptadores DynamoDB de los Lambdas.
 4. **Front-End Premium**: Una Web App full conectada al backend con login social integrado (Cognito), colas virtuales interactivas, componentes de selección visual de asientos optimizados y control visual Glassmorphism para la cartelera.
-5. **CI/CD Integrado**: Pipelines creados e implementados enteramente con GitHub Actions para Go Lambdas y Build+Deploy en K8s para Java, utilizando autenticación segura sin credenciales duras.
+5. **CI/CD Integrado**: Pipelines creados e implementados enteramente con GitHub Actions para Go Lambdas y Build/Push a Amazon ECR para el despliegue de los contenedores Java en ECS, utilizando autenticación segura.
 
 ## 6. Prompt para Agentic AI (Setup inicial en nueva Mac)
 
@@ -64,8 +64,7 @@ Si necesitas continuar el desarrollo de este proyecto en una nueva Mac utilizand
 > - `node` (Node.js LTS para la Web App React/TS)
 > - `go` (Para los microservicios Serverless en Golang)
 > - `openjdk@21` y `maven` (Java 21 para los Workers en Spring Boot)
-> - `minikube` y `kubectl` (Para probar despliegues locales de los workers en K8s)
-> - (Nota: Asume que ya proveeré un runtime de contenedores como Docker Desktop u OrbStack, o pídeme que lo instale si no está disponible).
+> - (Nota: Asume que ya proveeré un runtime de contenedores como Docker Desktop u OrbStack para correr las imágenes locales, o pídeme que lo instale si no está disponible).
 > 
 > **2. Clonado de Repositorios**
 > Crea un directorio de trabajo (por ejemplo `~/developer/proyectos/demo`) y accede a él. Luego, clona los siguientes repositorios de mi organización/usuario de GitHub (`moreirajonatan1983`):
