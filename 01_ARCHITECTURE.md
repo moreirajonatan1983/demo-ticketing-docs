@@ -75,7 +75,7 @@ Las cuentas `demo-ticketing-monitoring-stage` y `demo-ticketing-monitoring-prod`
 *   **`demo-ticketing-android`**: Aplicación nativa móvil con la mejor experiencia UX, construida con **Kotlin** nativo y **Jetpack Compose** (Material 3). Consume un BFF optimizado para redes móviles con payloads más reducidos.
 
 ### 2.4 Core Transaccional y Lógica de Negocio (Repositorio: `demo-ticketing-backend`)
-*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en AWS ECS (Fargate) estarán desarrollados en **Java 21**. Para más detalles sobre esta decisión, ver [ADR 001: Separación de Backend](./ADR_001_BACKEND_SEPARATION.md).*
+*Los lenguajes seleccionados para todo el procesamiento Serverless son **Go (Golang)** y **Node.js**, mientras que todos los microservicios offload y batch que se orquestarán en AWS ECS (Fargate) estarán desarrollados en **Java 21**. Para más detalles sobre esta decisión, ver [ADR 001: Separación de Backend](./08_ADR_001_BACKEND_SEPARATION.md).*
 
 #### A. Sala de Espera Virtual (Virtual Waiting Room)
 Componente periférico que intercepta el tráfico de una entrada antes de que alcance las APIs transaccionales. Emplea un sistema en memoria (ej: Amazon ElastiCache / Redis) para ordenar a los usuarios y asignarles una posición en la fila frente a picos de demanda, permitiéndoles entrar de forma racionada y controlada al checkout (Mitigación total de Flash Crowds).
